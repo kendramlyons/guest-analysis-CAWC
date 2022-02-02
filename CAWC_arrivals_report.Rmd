@@ -1,0 +1,38 @@
+---
+title: "CAWC_Arrivals_Report"
+author: "Kendra Lyons"
+date: "2/2/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## 
+
+```{r cawc}
+arrivals <- read_csv("data/arrival_date_counts_1.20.csv")
+```
+
+## 
+
+```{r pressure, echo=FALSE}
+# plot daily total arrivals (bars) with individual seven-day rolling mean (purple line)
+
+theme_set(theme_bw(15))
+
+ggplot(arrivals, aes(x=arrival_date, y=n))+
+  geom_col(fill='orange')+
+  geom_line(aes(y = seven_avg), color='purple', size=.8)+
+  ggtitle("Casa Alitas Daily Arrivals by Individual 1/26/21-1/20/22")+
+  theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust=1))+
+  xlab("Arrival Date")+
+  ylab("Number of Individuals")+ 
+  scale_x_date(date_breaks="1 month", date_labels="%B")
+```
+
+
+
