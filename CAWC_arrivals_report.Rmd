@@ -1,5 +1,5 @@
 ---
-title: "CAWC_Arrivals_Report"
+title: "CAWC Arrivals Report"
 author: "Kendra Lyons"
 date: "2/2/2022"
 output: html_document
@@ -11,28 +11,68 @@ library(tidyverse)
 opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
-## 
+## Data
 
 ```{r cawc}
 arrivals <- read_csv("data/arrival_date_counts_1.20.csv")
+individuals <- read_csv("data/individual_clean_dest_dates_1_20_22.csv")
 ```
 
-## 
+## Daily Arrivals Timeline
 
-```{r pressure, echo=FALSE}
+```{r arrivals, echo=FALSE}
 # plot daily total arrivals (bars) with individual seven-day rolling mean (purple line)
-
-theme_set(theme_bw(15))
 
 ggplot(arrivals, aes(x=arrival_date, y=n))+
   geom_col(fill='orange')+
   geom_line(aes(y = seven_avg), color='purple', size=.8)+
-  ggtitle("Casa Alitas Daily Arrivals by Individual 1/26/21-1/20/22")+
+  ggtitle("Daily Individual Arrivals 1/26/21-1/20/22")+
+  theme_bw() +
   theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust=1))+
   xlab("Arrival Date")+
   ylab("Number of Individuals")+ 
   scale_x_date(date_breaks="1 month", date_labels="%B")
+
+```
+
+## Stay Length by Group Size
+
+```{r echo=FALSE}
+
+par(mfrow = c(3, 1))
+
+# Boxplots of stay lengths for various group sizes
+individuals %>%
+  filter(stay_length >= 0) %>% 
+  mutate(group_size = factor(number_in_party)) %>%
+  ggplot(aes(x = stay_length, y = number_in_party)) +
+  geom_boxplot(aes(group = number_in_party), varwidth = TRUE, outlier.color = "red",)  + # zoom in on plot because there are a few large outliers
+  ylab("Group Size") +
+  xlab("Stay Length in Days") 
+
+# Look at distribution of individuals by group size for stays from 0-30 days
+individuals %>%
+  filter(stay_length >= 0) %>% 
+  ggplot(aes(x = stay_length, y = number_in_party)) +
+  geom_jitter(alpha = .2) +
+  xlim(0, 30) +  
+  ylab("Group Size") +
+  xlab("Stay Length in Days (0-30)") 
+
+# look at stay length distribution for individuals in parties fewer than 7
+individuals %>%
+  filter(stay_length >= 0 & number_in_party < 7) %>% #filter out mistakes in recording year (negative values)
+  ggplot(aes(x = stay_length)) +
+  geom_bar() +
+  xlim(0, 20) +
+  facet_wrap(~number_in_party) +
+  ylab("Number of Individuals") +
+  xlab("Stay Length in Days (0-20)")
+
 ```
 
 
+```{r echo=FALSE}
+
+```
 
