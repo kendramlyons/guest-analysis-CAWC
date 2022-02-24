@@ -1,5 +1,6 @@
 library(tidyverse)
 library(zoo)
+library(lubridate)
 
 # Wrangle data for daily arrivals over time
 idf <- read_csv("data/individual_travel_data_limited_1_20_22.csv")
@@ -138,6 +139,25 @@ idf <- idf %>%
 idf %>%
   count(destination_city) %>%
   View()
+
+idf <- idf %>% # get week number, month number and year
+  mutate(week_number = week(arrival_date),
+         arrival_year = year(arrival_date),
+         arrival_month = month(arrival_date))
+
+max(idf$week_number)
+
+idf <- idf %>% #changes week numbers in 2022 so they don't overlap with 2021
+  mutate(week_number = case_when(week_number == 1 ~ 54,
+                                 week_number == 2 ~ 55,
+                                 week_number == 3 ~ 56,
+                                 is.na(week_number) ~ 0,
+                                 TRUE ~ week_number),
+         arrival_month = if_else((arrival_month == 1 & arrival_year == 2022), 
+                                 13, arrival_month))
+
+
+# Save Data to Disk
 
 write_csv(idf, "data/individual_clean_dest_dates_1_20_22.csv")
 

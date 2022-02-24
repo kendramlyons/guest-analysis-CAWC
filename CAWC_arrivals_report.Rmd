@@ -14,16 +14,16 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ## Data
 
 ```{r cawc}
-arrivals <- read_csv("data/arrival_date_counts_1.20.csv")
+arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv")
 individuals <- read_csv("data/individual_clean_dest_dates_1_20_22.csv")
 ```
 
 ## Daily Arrivals Timeline
 
-```{r arrivals, echo=FALSE}
+```{r arrivals, echo=FALSE, message=FALSE}
 # plot daily total arrivals (bars) with individual seven-day rolling mean (purple line)
 
-ggplot(arrivals, aes(x=arrival_date, y=n))+
+ggplot(arrivals_7_day, aes(x=arrival_date, y=n))+
   geom_col(fill='orange')+
   geom_line(aes(y = seven_avg), color='purple', size=.8)+
   ggtitle("Daily Individual Arrivals 1/26/21-1/20/22")+
@@ -33,13 +33,27 @@ ggplot(arrivals, aes(x=arrival_date, y=n))+
   ylab("Number of Individuals")+ 
   scale_x_date(date_breaks="1 month", date_labels="%B")
 
+# weekly arrivals barplot with linear regression
+
+arrivals_wk <- individuals %>%
+  count(week_number)
+
+arrivals_wk %>%
+  ggplot(aes(x = week_number, y = n)) +
+  geom_bar(stat = "identity", fill = 'orange') +
+  geom_smooth(method = "lm", color = 'purple', size=.8) +
+  theme_bw() +
+  theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust=1)) +
+  xlab("Arrival Week Number") +
+  ylab("Number of Individuals")
+
 ```
 
 ## Stay Length by Group Size
 
 ```{r echo=FALSE}
 
-par(mfrow = c(3, 1))
+par(mfrow = c(1, 3))
 
 # Boxplots of stay lengths for various group sizes
 individuals %>%
@@ -48,7 +62,7 @@ individuals %>%
   ggplot(aes(x = stay_length, y = number_in_party)) +
   geom_boxplot(aes(group = number_in_party), varwidth = TRUE, outlier.color = "red",)  + # zoom in on plot because there are a few large outliers
   ylab("Group Size") +
-  xlab("Stay Length in Days") 
+  xlab("Stay Length in Days (0-90)") 
 
 # Look at distribution of individuals by group size for stays from 0-30 days
 individuals %>%
