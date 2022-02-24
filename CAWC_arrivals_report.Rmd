@@ -18,15 +18,20 @@ arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv")
 individuals <- read_csv("data/individual_clean_dest_dates_1_20_22.csv")
 ```
 
-## Daily Arrivals Timeline
+# 1/26/21-1/20/22
+
+## Arrivals Timelines
 
 ```{r arrivals, echo=FALSE, message=FALSE}
+
+par(mfrow = c(1, 3))
+
 # plot daily total arrivals (bars) with individual seven-day rolling mean (purple line)
 
 ggplot(arrivals_7_day, aes(x=arrival_date, y=n))+
   geom_col(fill='orange')+
   geom_line(aes(y = seven_avg), color='purple', size=.8)+
-  ggtitle("Daily Individual Arrivals 1/26/21-1/20/22")+
+  ggtitle("Daily Individual Arrivals")+
   theme_bw() +
   theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust=1))+
   xlab("Arrival Date")+
@@ -41,11 +46,25 @@ arrivals_wk <- individuals %>%
 arrivals_wk %>%
   ggplot(aes(x = week_number, y = n)) +
   geom_bar(stat = "identity", fill = 'orange') +
-  geom_smooth(method = "lm", color = 'purple', size=.8) +
+  geom_smooth(method = "lm", formula = y ~ x, color = 'purple', size=.8) +
   theme_bw() +
   theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust=1)) +
+  ggtitle("Weekly Individual Arrivals")+
   xlab("Arrival Week Number") +
   ylab("Number of Individuals")
+
+# Examine monthly arrivals
+monthly_arrivals <- individuals %>%
+  count(week_number, arrival_month, arrival_year)
+
+monthly_arrivals %>% #average weekly arrivals by month boxplots
+  mutate(arrival_month = factor(arrival_month)) %>%
+  ggplot(aes(x = arrival_month, y = n)) +
+  geom_boxplot(varwidth = TRUE) +
+  ylab("Number of Weekly Arrivals") +
+  xlab("Arrival Month Jan. 2021 (1) - Jan. 2022 (13)") +
+  ggtitle("Weekly Arrivals by Month") +
+  theme(text = element_text(size=15))
 
 ```
 
@@ -80,6 +99,7 @@ individuals %>%
   geom_bar() +
   xlim(0, 20) +
   facet_wrap(~number_in_party) +
+  ggtitle("Stay Length, Groups of 6 or Fewer") +
   ylab("Number of Individuals") +
   xlab("Stay Length in Days (0-20)")
 
