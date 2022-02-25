@@ -21,7 +21,6 @@ dt.cts <- dt.cts %>%
 dt.cts$seven_avg[1:3] <- 2
 
 # replace zeros at end with average from closest date
-# REWRITE TO USE NEGATIVE INDEXING FOR LAST THREE!
 dt.cts$seven_avg[351:353] <- dt.cts$seven_avg[350] #change index for new data
 
 # Save data to disk 
@@ -157,12 +156,64 @@ idf <- idf %>% #changes week numbers in 2022 so they don't overlap with 2021
                                  13, arrival_month))
 
 
+# Clean origin countries and languages
+
+## Clean language column
+
+idf <- idf %>% # deal with missing data
+  mutate(language = case_when( language == '00' ~ '',
+                               language == 'Contact_' ~ '',
+                               language == 'N/A' ~ '',
+                               language == 'Not Listed (add to notes)' ~ '',
+                               #could add indigenous, speaks English
+                               TRUE ~ language))
+
+# remove (Country) from language column by separating language on space ( 
+idf <- idf %>%
+  separate(language, sep = '\\s\\(', into = c('language', 'country'), remove = TRUE)
+
+# separate language column on forward slash
+idf <- idf %>%
+  separate(language, sep = '\\/', into = c('language1', 'language2'), remove = TRUE)
+
+# Clean up language spelling and remaining multiple entries
+idf <- idf %>%
+  mutate(language1 = case_when( language1 == 'Cho Ol' ~ "Ch'ol",
+                                language1 == 'Haitian creole' ~ 'Creole', # Portuguese creole, too
+                                language1 == 'indigenous' ~ '',
+                                language1 == "Q'eqchi" ~ "Q'eqchi'",
+                                language1 == 'Quanjobal' ~ "Q'anjob'al",
+                                language1 == 'Kichwa' ~ 'Quichua',
+                                language1 == 'speaks English' ~ 'English',
+                                language1 == 'Tzotzil Maya' ~ 'Tzeltal Maya', 
+                                language1 == 'Telugu and English' ~ 'Telugu',
+                                TRUE ~ language1))
+
+# add english to language
+idf <- idf %>%
+  mutate(language2 = if_else(language1 == 'Telugu', 'English', language2))
+
+## Clean origin column
+idf <- idf %>%
+  mutate(country_of_origin = case_when(country_of_origin == 'Contact_' ~ '',
+                                       country_of_origin == 'Not Identified' ~ '',
+                                       country_of_origin == 'Pakistaan' ~ 'Pakistan',
+                                       TRUE ~ country_of_origin))
+
+idf <- idf %>%
+  separate(country_of_origin, sep = '[/,]', into = c('country1', 'country2')) 
+
+
 # Save Data to Disk
 
-write_csv(idf, "data/individual_clean_dest_dates_1_20_22.csv")
+write_csv(idf, "data/individual_all_clean_1_20_22.csv")
+
+
 
 # Calculate percentages of stay lengths
 stay_len_perc <- idf %>%
   filter(stay_length >= 0) %>%
   count(stay_length) %>%
   mutate(percent = (n/sum(n))*100)
+
+write_csv(stay_len_perc, "data/stay_length_percent_1_20_22.csv")

@@ -15,10 +15,10 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 ```{r cawc}
 arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv")
-individuals <- read_csv("data/individual_clean_dest_dates_1_20_22.csv")
+individuals <- read_csv("data/individual_all_clean_1_20_22.csv")
 ```
 
-# 1/26/21-1/20/22
+# Dates: 1/26/21-1/20/22
 
 ## Arrivals Timelines
 
@@ -60,7 +60,7 @@ monthly_arrivals <- individuals %>%
 monthly_arrivals %>% #average weekly arrivals by month boxplots
   mutate(arrival_month = factor(arrival_month)) %>%
   ggplot(aes(x = arrival_month, y = n)) +
-  geom_boxplot(varwidth = TRUE) +
+  geom_boxplot(varwidth = TRUE, outlier.color = "red") +
   ylab("Number of Weekly Arrivals") +
   xlab("Arrival Month Jan. 2021 (1) - Jan. 2022 (13)") +
   ggtitle("Weekly Arrivals by Month") +
