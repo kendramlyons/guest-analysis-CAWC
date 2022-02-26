@@ -14,9 +14,13 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ## Data
 
 ```{r cawc}
+
 arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv")
+
 individuals <- read_csv("data/individual_all_clean_1_20_22.csv")
+
 stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
+
 ```
 
 # Dates: 1/26/21-1/20/22
