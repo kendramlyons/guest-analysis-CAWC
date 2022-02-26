@@ -16,6 +16,7 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```{r cawc}
 arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv")
 individuals <- read_csv("data/individual_all_clean_1_20_22.csv")
+stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 ```
 
 # Dates: 1/26/21-1/20/22
@@ -68,6 +69,21 @@ monthly_arrivals %>% #average weekly arrivals by month boxplots
 
 ```
 
+## Stay Length Distribution
+
+```{r echo=FALSE}
+
+# plot stay length percentages
+stay_len_perc %>%
+  ggplot(aes(x = stay_length, y = percent)) +
+  geom_point(color="purple") +
+  geom_line(color="orange") +
+  xlim(0,50) +
+  labs(x = "Stay Length in Days", y = "Percent of All Guests") +
+  theme_bw(15)
+  
+```
+
 ## Stay Length by Group Size
 
 ```{r echo=FALSE}
@@ -81,7 +97,8 @@ individuals %>%
   ggplot(aes(x = stay_length, y = number_in_party)) +
   geom_boxplot(aes(group = number_in_party), varwidth = TRUE, outlier.color = "red",)  + # zoom in on plot because there are a few large outliers
   ylab("Group Size") +
-  xlab("Stay Length in Days (0-90)") 
+  xlab("Stay Length in Days (0-90)") +
+  theme(text = element_text(size=15))
 
 # Look at distribution of individuals by group size for stays from 0-30 days
 individuals %>%
@@ -90,7 +107,8 @@ individuals %>%
   geom_jitter(alpha = .2) +
   xlim(0, 30) +  
   ylab("Group Size") +
-  xlab("Stay Length in Days (0-30)") 
+  xlab("Stay Length in Days (0-30)") +
+  theme_bw(15) 
 
 # look at stay length distribution for individuals in parties fewer than 7
 individuals %>%
@@ -101,12 +119,9 @@ individuals %>%
   facet_wrap(~number_in_party) +
   ggtitle("Stay Length, Groups of 6 or Fewer") +
   ylab("Number of Individuals") +
-  xlab("Stay Length in Days (0-20)")
+  xlab("Stay Length in Days (0-20)") +
+  theme_bw(15)
 
 ```
 
-
-```{r echo=FALSE}
-
-```
 
