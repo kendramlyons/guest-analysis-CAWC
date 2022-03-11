@@ -2,12 +2,15 @@ library(tidyverse)
 library(zoo)
 library(lubridate)
 
-# Wrangle data for daily arrivals over time
+## rEAD IN DATA
 idf <- read_csv("data/individual_travel_data_limited_1_20_22.csv")
 
 # Rename first column 
 idf <- idf %>%
   rename("group_id" = ...1)
+
+
+## GET ARRIVAL TIMELINE DATA
 
 # create new dataframe with number of individual arrivals per day
 dt.cts <- idf %>%
@@ -25,6 +28,7 @@ dt.cts$seven_avg[351:353] <- dt.cts$seven_avg[350] #change index for new data
 
 # Save data to disk 
 write_csv(dt.cts, "data/arrival_date_counts_1.20.csv")
+
 
 ## CLEAN DATES
 
@@ -51,7 +55,16 @@ idf <- idf %>%
 idf <- idf %>%
   mutate(stay_length = departure_date - arrival_date)
 
-## CLEAN STATE AND CITY NAMES
+# Calculate percentages of stay lengths
+stay_len_perc <- idf %>%
+  filter(stay_length >= 0) %>%
+  count(stay_length) %>%
+  mutate(percent = (n/sum(n))*100)
+
+write_csv(stay_len_perc, "data/stay_length_percent_1_20_22.csv")
+
+
+## CLEAN STATES
 
 idf <- idf %>% 
   mutate(destination = case_when(destination == "Z" ~ "",
@@ -110,6 +123,20 @@ idf %>%
 idf <- idf %>%
   select(- c(state_names, state_abbs))
 
+
+#Number of arrivals by Destination
+unique(idf$state_name)
+#46 States + DC on 8.1
+dst.cts <- idf %>%
+  count(state_name)
+dst.cts$percent <- round((dst.cts$n/sum(dst.cts$n))*100, 2)
+dst.cts <- arrange(dst.cts, -n)
+
+write_csv(dst.cts, "data/destination_counts_1.20.csv")
+
+
+## CLEAN CITIES
+
 # Unite city with destination_city
 idf <- idf %>%
   unite("destination_city", c(city, destination_city), na.rm = TRUE)
@@ -139,6 +166,8 @@ idf %>%
   count(destination_city) %>%
   View()
 
+## GET WEEK#, MONTH# AND YEAR
+
 idf <- idf %>% # get week number, month number and year
   mutate(week_number = week(arrival_date),
          arrival_year = year(arrival_date),
@@ -156,9 +185,10 @@ idf <- idf %>% #changes week numbers in 2022 so they don't overlap with 2021
                                  13, arrival_month))
 
 
+
 # Clean origin countries and languages
 
-## Clean language column
+## CLEAN LANGUAGES
 
 idf <- idf %>% # deal with missing data
   mutate(language = case_when( language == '00' ~ '',
@@ -174,26 +204,42 @@ idf <- idf %>%
 
 # separate language column on forward slash
 idf <- idf %>%
-  separate(language, sep = '\\/', into = c('language1', 'language2'), remove = TRUE)
+  separate(language, sep = '\\/', into = c('language', 'language2'), remove = TRUE)
 
 # Clean up language spelling and remaining multiple entries
 idf <- idf %>%
-  mutate(language1 = case_when( language1 == 'Cho Ol' ~ "Ch'ol",
-                                language1 == 'Haitian creole' ~ 'Creole', # Portuguese creole, too
-                                language1 == 'indigenous' ~ '',
-                                language1 == "Q'eqchi" ~ "Q'eqchi'",
-                                language1 == 'Quanjobal' ~ "Q'anjob'al",
-                                language1 == 'Kichwa' ~ 'Quichua',
-                                language1 == 'speaks English' ~ 'English',
-                                language1 == 'Tzotzil Maya' ~ 'Tzeltal Maya', 
-                                language1 == 'Telugu and English' ~ 'Telugu',
-                                TRUE ~ language1))
+  mutate(language = case_when(  language == 'Cho Ol' ~ "Ch'ol",
+                                language == 'Haitian creole' ~ 'Creole', # Portuguese creole, too
+                                language == 'indigenous' ~ '',
+                                language == "Q'eqchi" ~ "Q'eqchi'",
+                                language == 'Quanjobal' ~ "Q'anjob'al",
+                                language == 'Kichwa' ~ 'Quichua',
+                                language == 'speaks English' ~ 'English',
+                                language == 'Tzotzil Maya' ~ 'Tzeltal Maya', 
+                                language == 'Telugu and English' ~ 'Telugu',
+                                TRUE ~ language))
 
-# add english to language
+# add english to language2
 idf <- idf %>%
-  mutate(language2 = if_else(language1 == 'Telugu', 'English', language2))
+  mutate(language2 = if_else(language == 'Telugu', 'English', language2))
 
-## Clean origin column
+
+#Number of arrivals by language
+unique(idf$language)
+
+#
+lang.cts <- idf %>%
+  count(language)
+
+# add percentage column
+lang.cts$percent <- round((lang.cts$n/sum(lang.cts$n))*100, 2)
+lang.cts <- arrange(lang.cts, -n)
+
+write_csv(lang.cts, "data/language_counts_1.20.csv")
+
+
+## CLEAN ORIGINS
+
 idf <- idf %>%
   mutate(country_of_origin = case_when(country_of_origin == 'Contact_' ~ '',
                                        country_of_origin == 'Not Identified' ~ '',
@@ -201,7 +247,20 @@ idf <- idf %>%
                                        TRUE ~ country_of_origin))
 
 idf <- idf %>%
-  separate(country_of_origin, sep = '[/,]', into = c('country1', 'country2')) 
+  separate(country_of_origin, sep = '[/,]', into = c('country', 'country2')) 
+
+
+#Number of arrivals by Country
+unique(idf$country)
+#26 Countries on 8.1
+cntry.cts <- idf %>%
+  count(country)
+
+cntry.cts$percent <- round((cntry.cts$n/sum(cntry.cts$n))*100, 2)
+
+cntry.cts <- arrange(cntry.cts, -n)
+
+write_csv(cntry.cts, "data/country_counts_1.20.csv")
 
 
 # Save Data to Disk
@@ -210,10 +269,3 @@ write_csv(idf, "data/individual_all_clean_1_20_22.csv")
 
 
 
-# Calculate percentages of stay lengths
-stay_len_perc <- idf %>%
-  filter(stay_length >= 0) %>%
-  count(stay_length) %>%
-  mutate(percent = (n/sum(n))*100)
-
-write_csv(stay_len_perc, "data/stay_length_percent_1_20_22.csv")

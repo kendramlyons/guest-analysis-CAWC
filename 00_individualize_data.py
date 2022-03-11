@@ -1,6 +1,6 @@
 # Python script for individualizing data 
 
-import csv, pandas as pd, matplotlib.pyplot as plt
+import csv, pandas as pd
 
 df = pd.read_csv("data/travel_less_raw_limited_1.20.csv")
 
