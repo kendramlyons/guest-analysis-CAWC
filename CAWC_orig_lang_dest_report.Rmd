@@ -1,0 +1,99 @@
+---
+title: "CAWC Origins, Languages & Destinations Report"
+author: "Kendra Lyons"
+date: "3/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Data
+
+```{r}
+
+individuals <- read_csv("data/individual_all_clean_1_20_22.csv")
+
+countries <- drop_na(read_csv("data/country_counts_1.20.csv"))
+
+languages <- drop_na(read_csv("data/language_counts_1.20.csv"))
+
+destinations <- drop_na(read_csv("data/destination_counts_1.20.csv"))
+
+```
+# Dates: 1/26/21 to 1/20/22
+
+## Countries of Origin
+
+```{r echo=FALSE}
+
+# filter out countries with few arrivals
+top_ctrys <- c("Venezuela", "Brazil", "Cuba", "Ecuador", "Mexico", "Nicaragua", "Haiti", "Colombia",  "Guatemala", "Peru", "Honduras", "India" ) # update when data is updated
+
+# set plot theme
+theme_set(theme_minimal(15)) 
+#par(mfrow = c(1, 2))
+
+# Country of Origin percentages
+countries %>%
+  ggplot(aes(x = reorder(country, -percent), y = percent)) +
+  geom_col() +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=.5)) +
+  labs(title = "Casa Alitas Arrivals by Origin Country", x = "", y = "Percent of Arrivals")
+
+# Top 12 countries of origin FW
+individuals %>%
+  filter(country %in% top_ctrys) %>%
+  ggplot(aes(x=arrival_date)) +
+  geom_bar(show.legend = FALSE) +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=.5)) +
+  labs(title = "Casa Alitas Daily Arrivals", subtitle = "Top 12 Countries of Origin", x = "Arrival Date", y = "Number of Individuals") + 
+  scale_x_date(date_breaks="1 month", date_labels="%b") + 
+  facet_wrap(~country)
+
+
+
+```
+
+## Languages
+
+```{r echo=FALSE}
+
+languages %>%
+  ggplot(aes(x = reorder(language, -percent), y = percent)) +
+  geom_col() +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=.5)) +
+  labs(title = "Casa Alitas Arrivals by Language", x = "", y = "Percent of Arrivals")
+
+```
+
+## Destination States
+
+```{r echo=FALSE}
+top_states <- c("Florida", "Massachusetts", "New York", "Texas", "New Jersey", "California", "Pennsylvania", "Georgia", "Connecticut", "Illinois", "Utah", "Tennessee")
+
+
+destinations %>%
+  ggplot(aes(x = reorder(state_name, -percent), y = percent)) +
+  geom_col() +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=.5)) +
+  labs(title = "Casa Alitas Arrivals by Destination State", x = "", y = "Percent of Arrivals")
+
+palette2 <- c("#687d34","#330073","#57dd65", "#94299a","#7fe7c2","#be0063","#00e3e0","#970015","#5d6ec4","#92b426","#4c0054","#ebd460","#d496c4","#008b5e","#bc4c7d","#2e4700","#bb93d9","#cb9704","#854d88","#e2d67d","#ff93d1","#d67218","#7a0017","#ffa265","#9aca71","#8A7C64","#599861")
+
+individuals %>%
+  filter(state_abb != 0, country != 0, country %in% top_ctrys, state_name %in% top_states) %>%
+ggplot(aes(y=country, fill=state_abb))+
+  geom_bar()+
+  theme(text = element_text(size=15), axis.text.x=element_text(angle=45, hjust=1, vjust=1), legend.title = element_text(size=12), legend.text = element_text(size=11))+
+  labs(title = "Casa Alitas Arrivals, Top Origins & Destinations", y = "Country of Origin", x = "Number of Individuals", fill = "Destination State") +
+  scale_fill_discrete()
+  
+#scale_fill_viridis_d()
+#+scale_fill_manual(values = palette2)
+```
+
+

@@ -27,7 +27,7 @@ stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 
 ## Arrivals Timelines
 
-```{r arrivals, echo=FALSE, message=FALSE}
+```{r arrivals, echo=FALSE}
 
 par(mfrow = c(1, 3))
 
