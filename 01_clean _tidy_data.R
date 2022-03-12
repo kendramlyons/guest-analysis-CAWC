@@ -3,7 +3,7 @@ library(zoo)
 library(lubridate)
 
 ## rEAD IN DATA
-idf <- read_csv("data/individual_travel_data_limited_1_20_22.csv")
+idf <- read_csv("data/travel_less_raw_limited_1.20.csv")
 
 # Rename first column 
 idf <- idf %>%
@@ -265,7 +265,7 @@ write_csv(cntry.cts, "data/country_counts_1.20.csv")
 
 # Save Data to Disk
 
-write_csv(idf, "data/individual_all_clean_1_20_22.csv")
+write_csv(idf, "data/group_all_clean_1_20_22.csv")
 
 
 
