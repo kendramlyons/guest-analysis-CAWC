@@ -2,18 +2,18 @@ library(tidyverse)
 library(zoo)
 library(lubridate)
 
-## rEAD IN DATA
-idf <- read_csv("data/travel_less_raw_limited_1.20.csv")
+## READ IN DATA
+df <- read_csv("data/travel_less_raw_limited_1.20.csv")
 
 # Rename first column 
-idf <- idf %>%
+df <- df %>%
   rename("group_id" = ...1)
 
 
 ## GET ARRIVAL TIMELINE DATA
 
 # create new dataframe with number of individual arrivals per day
-dt.cts <- idf %>%
+dt.cts <- df %>%
   count(arrival_date)
 
 # add new column with rolling 7-day-average arrivals
@@ -32,11 +32,11 @@ write_csv(dt.cts, "data/arrival_date_counts_1.20.csv")
 
 ## CLEAN DATES
 
-idf <- idf %>%
+df <- df %>%
   separate(day_m_d_yy, into = c("month", "day", "year"), sep = "/", remove = FALSE)
 
 # clean departure years
-idf <- idf %>%
+df <- df %>%
   mutate(year = case_when(year == "2022" ~ "2022", #"2022" %in% arrival_datetime ~ "2022",
                           year == "22" ~ "2022", #this might not do anything
                           year == "22022" ~ "2022",
@@ -45,18 +45,18 @@ idf <- idf %>%
                           is.na(year) ~ "",
                           TRUE ~ "2021"))
 
-idf <- idf %>%
+df <- df %>%
   unite("departure_date", c("month", "day", "year"), sep = "/", na.rm = TRUE)
 
-idf <- idf %>%
+df <- df %>%
   mutate(departure_date = as.Date(departure_date, format = "%m/%d/%Y"))
 
 # Add stay length column
-idf <- idf %>%
+df <- df %>%
   mutate(stay_length = departure_date - arrival_date)
 
 # Calculate percentages of stay lengths
-stay_len_perc <- idf %>%
+stay_len_perc <- df %>%
   filter(stay_length >= 0) %>%
   count(stay_length) %>%
   mutate(percent = (n/sum(n))*100)
@@ -66,7 +66,7 @@ write_csv(stay_len_perc, "data/stay_length_percent_1_20_22.csv")
 
 ## CLEAN STATES
 
-idf <- idf %>% 
+df <- df %>% 
   mutate(destination = case_when(destination == "Z" ~ "",
                                  destination == "Zip code not found" ~ "",
                                  destination == "none listed" ~ "",
@@ -76,19 +76,19 @@ idf <- idf %>%
                                  TRUE ~ destination))
 
 # make two new columns from destination column to hold state name and abbreviation
-idf <- idf %>%
+df <- df %>%
   separate(destination, sep = "\\s?[-,] ", into = c("state_name", "state_abb"), 
            remove = FALSE)
 
 # Fix state_abb values
-idf <- idf %>% 
+df <- df %>% 
   mutate(state_abb = case_when(state_abb == "Texas" ~ "TX", 
                                state_abb == "Fl" ~ "FL",
                                state_abb == "Massachusetts" ~ "MA",
                                TRUE ~ state_abb))
 
 # create city column, extracting values from state column
-idf <- idf %>%
+df <- df %>%
   mutate(city = ifelse(state_name %in% state.name,
                        NA, state_name),
          state_name = ifelse(state_name %in% state.name,
@@ -99,7 +99,7 @@ state_info_1 <- data.frame(state_names = state.name,
                          state_abb = state.abb)
 
 # left join, adding state_names column with missing values from abbs
-idf <- idf %>%
+df <- df %>%
   left_join(state_info_1)
 
 #make new data frame with state names and abbs (matching state_name column)
@@ -107,27 +107,27 @@ state_info_2 <- data.frame(state_name = state.name,
                          state_abbs = state.abb)
 
 #left join, adding state_abbs column with missing values from names
-idf <- idf %>%
+df <- df %>%
   left_join(state_info_2)
 
 # complete state_name and State_abb columns with new values from state_names/_abbs
-idf <- idf %>%
+df <- df %>%
   mutate(state_name = ifelse(is.na(state_name), state_names, state_name),
          state_abb = ifelse(is.na(state_abb), state_abbs, state_abb))
 
 #inspect results
-idf %>%
+df %>%
   count(state_name, state_abb) %>%
   View()
 
-idf <- idf %>%
+df <- df %>%
   select(- c(state_names, state_abbs))
 
 
 #Number of arrivals by Destination
-unique(idf$state_name)
+unique(df$state_name)
 #46 States + DC on 8.1
-dst.cts <- idf %>%
+dst.cts <- df %>%
   count(state_name)
 dst.cts$percent <- round((dst.cts$n/sum(dst.cts$n))*100, 2)
 dst.cts <- arrange(dst.cts, -n)
@@ -138,11 +138,11 @@ write_csv(dst.cts, "data/destination_counts_1.20.csv")
 ## CLEAN CITIES
 
 # Unite city with destination_city
-idf <- idf %>%
+df <- df %>%
   unite("destination_city", c(city, destination_city), na.rm = TRUE)
 
 # clean city names 
-idf <- idf %>%
+df <- df %>%
   mutate(destination_city = case_when(destination_city == "Z" ~ "",
                                       destination_city == "Mexico" ~ "",
                                       destination_city == "_none listed" ~ "",
@@ -162,20 +162,20 @@ idf <- idf %>%
                                       destination_city == "_Browns Summit" ~ "Brown's Summit",
                                       TRUE ~ destination_city))
 
-idf %>%
+df %>%
   count(destination_city) %>%
   View()
 
 ## GET WEEK#, MONTH# AND YEAR
 
-idf <- idf %>% # get week number, month number and year
+df <- df %>% # get week number, month number and year
   mutate(week_number = week(arrival_date),
          arrival_year = year(arrival_date),
          arrival_month = month(arrival_date))
 
-max(idf$week_number)
+max(df$week_number)
 
-idf <- idf %>% #changes week numbers in 2022 so they don't overlap with 2021
+df <- df %>% #changes week numbers in 2022 so they don't overlap with 2021
   mutate(week_number = case_when(week_number == 1 ~ 54,
                                  week_number == 2 ~ 55,
                                  week_number == 3 ~ 56,
@@ -190,7 +190,7 @@ idf <- idf %>% #changes week numbers in 2022 so they don't overlap with 2021
 
 ## CLEAN LANGUAGES
 
-idf <- idf %>% # deal with missing data
+df <- df %>% # deal with missing data
   mutate(language = case_when( language == '00' ~ '',
                                language == 'Contact_' ~ '',
                                language == 'N/A' ~ '',
@@ -199,15 +199,15 @@ idf <- idf %>% # deal with missing data
                                TRUE ~ language))
 
 # remove (Country) from language column by separating language on space ( 
-idf <- idf %>%
+df <- df %>%
   separate(language, sep = '\\s\\(', into = c('language', 'country'), remove = TRUE)
 
 # separate language column on forward slash
-idf <- idf %>%
+df <- df %>%
   separate(language, sep = '\\/', into = c('language', 'language2'), remove = TRUE)
 
 # Clean up language spelling and remaining multiple entries
-idf <- idf %>%
+df <- df %>%
   mutate(language = case_when(  language == 'Cho Ol' ~ "Ch'ol",
                                 language == 'Haitian creole' ~ 'Creole', # Portuguese creole, too
                                 language == 'indigenous' ~ '',
@@ -220,15 +220,15 @@ idf <- idf %>%
                                 TRUE ~ language))
 
 # add english to language2
-idf <- idf %>%
+df <- df %>%
   mutate(language2 = if_else(language == 'Telugu', 'English', language2))
 
 
 #Number of arrivals by language
-unique(idf$language)
+unique(df$language)
 
 #
-lang.cts <- idf %>%
+lang.cts <- df %>%
   count(language)
 
 # add percentage column
@@ -240,20 +240,20 @@ write_csv(lang.cts, "data/language_counts_1.20.csv")
 
 ## CLEAN ORIGINS
 
-idf <- idf %>%
+df <- df %>%
   mutate(country_of_origin = case_when(country_of_origin == 'Contact_' ~ '',
                                        country_of_origin == 'Not Identified' ~ '',
                                        country_of_origin == 'Pakistaan' ~ 'Pakistan',
                                        TRUE ~ country_of_origin))
 
-idf <- idf %>%
+df <- df %>%
   separate(country_of_origin, sep = '[/,]', into = c('country', 'country2')) 
 
 
 #Number of arrivals by Country
-unique(idf$country)
+unique(df$country)
 #26 Countries on 8.1
-cntry.cts <- idf %>%
+cntry.cts <- df %>%
   count(country)
 
 cntry.cts$percent <- round((cntry.cts$n/sum(cntry.cts$n))*100, 2)
@@ -265,7 +265,7 @@ write_csv(cntry.cts, "data/country_counts_1.20.csv")
 
 # Save Data to Disk
 
-write_csv(idf, "data/group_all_clean_1_20_22.csv")
+write_csv(df, "data/group_all_clean_1_20_22.csv")
 
 
 

@@ -33,11 +33,11 @@ Data collection practices have been adapted, necessitated by shifting circumstan
 
 **Data Pre-Processing and Limitations**
 
-Data have been pre-cleaned but may still contain mistakes. Data are collected by group, and have been "individualized" for this analysis by duplicating each row according the the group size it represents. This introduces some noise into the data. In some cases have been aggregated by date or category. 
+Data have been pre-cleaned but may still contain errors. Collection is by group, so the data have been "individualized" for this analysis by duplicating each row according the the group size it represents. This introduces some noise into the data, especially for family groups who are multinational or multilingual. In some cases data have been aggregated by date or category. Variables extrapolated from the data include stay length (from arrival and departure dates), week number, arrival year and arrival month, but extrapolation was not pristine and there are some errors. 
 
 **Privacy Statement**
 
-Because much of the data collected about people who pass through the shelter are of a personal and sensitive nature, raw data is not stored in this repository. Data have been de-identified by removing private or non-relevant variables. 
+Because much of the data collected about people who pass through the shelter are of a personal and sensitive nature, raw data is not stored in this repository. Data have been de-identified by removing private and non-relevant variables. 
 
 **Further Information**
 
