@@ -39,7 +39,7 @@ theme_set(theme_minimal(15))
 
 # Country of Origin percentages
 countries %>%
-  ggplot(aes(x = reorder(country, -percent), y = percent)) +
+  ggplot(aes(x = reorder(country, -percent),  y = percent)) +
   geom_col() +
   theme(axis.text.x=element_text(angle=90, hjust=1, vjust=.5)) +
   labs(title = "Casa Alitas Arrivals by Origin Country", x = "", y = "Percent of Arrivals")

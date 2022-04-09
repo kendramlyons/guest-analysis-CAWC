@@ -21,9 +21,9 @@ individuals <- read_csv("data/individual_all_clean_1_20_22.csv")
 
 stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 
-```
+groups <- read_csv("data/group_all_clean_1_20_22.csv")
 
-# Dates: 1/26/21-1/20/22
+```
 
 ## Arrivals Timelines
 
@@ -32,21 +32,20 @@ stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 # set plot theme
 theme_set(theme_minimal(15))
 
-par(mfrow = c(1, 3))
+# plot daily total arrivals (bars) and individual seven-day rolling mean (line)
 
-# plot daily total arrivals (bars) with individual seven-day rolling mean (purple line)
-
-ggplot(arrivals_7_day, aes(x=arrival_date, y=n))+
-  geom_col(fill='orange')+
-  geom_line(aes(y = seven_avg), color='purple', size=.8)+
-  ggtitle("Daily Arrivals")+
-  theme(axis.text.x = element_text(angle = 45, hjust=1))+
-  xlab("Arrival Date")+
-  ylab("Number of Individuals")+ 
-  scale_x_date(date_breaks="1 month", date_labels="%B")
+ggplot(arrivals_7_day, aes(x=arrival_date, y=n)) +
+  geom_col(fill='orange') +
+  geom_line(aes(y = seven_avg), 
+            color='purple', size=.8) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  labs(title = "Dates: 1/26/21-1/20/22", 
+       x = element_blank(), 
+       y = "Number of Daily Arrivals") +
+  scale_x_date(date_breaks="1 month", 
+               date_labels="%B")
 
 # weekly arrivals barplot with linear regression
-
 arrivals_wk <- individuals %>%
   count(week_number)
 
@@ -55,21 +54,20 @@ arrivals_wk %>%
   geom_bar(stat = "identity", fill = 'orange') +
   geom_smooth(method = "lm", formula = y ~ x, color = 'purple', size=.8) +
   theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-  ggtitle("Weekly Arrivals")+
-  xlab("Arrival Week Number") +
-  ylab("Number of Individuals")
+  labs(title = "Weekly Arrivals", x = element_blank(), y = "Number of Weekly Arrivals") 
 
-# Examine monthly arrivals
+# Monthly arrivals boxplot
 monthly_arrivals <- individuals %>%
-  count(week_number, arrival_month, arrival_year)
+  count(arrival_date, arrival_month, arrival_year)
 
 monthly_arrivals %>% #average weekly arrivals by month boxplots
   mutate(arrival_month = factor(arrival_month)) %>%
   ggplot(aes(x = arrival_month, y = n)) +
-  geom_boxplot(varwidth = TRUE, outlier.color = "red") +
-  ylab("Number of Weekly Arrivals") +
-  xlab("Jan. 2021 (1) - Jan. 2022 (13)") +
-  ggtitle("Monthly Arrivals")
+  geom_boxplot(varwidth = TRUE, 
+               outlier.color = "red") +
+  labs(title = "Monthly arrivals", 
+       x = element_blank(), 
+       y = "Number of Daily Arrivals") 
 
 ```
 
@@ -79,60 +77,78 @@ monthly_arrivals %>% #average weekly arrivals by month boxplots
 
 # plot stay length percentages
 stay_len_perc %>%
-  ggplot(aes(x = stay_length, y = percent)) +
-  geom_point(color="purple") +
-  geom_line(color="orange") +
+  ggplot(aes(x = stay_length, 
+             y = percent)) +
+  geom_point(color="purple", na.rm = TRUE) +
+  geom_line(color="orange", na.rm = TRUE) +
   xlim(0,50) +
-  labs(title = "Stay Length, All Guests", x = "Days", y = "Percent")
+  labs(x = "Stay Length in Days, All Guests", 
+       y = "Percent")
+
+
+# box plots of stay lengths for various group sizes
+individuals %>%
+  filter(stay_length >= 0) %>% 
+  mutate(group_size = factor(number_in_party)) %>%
+  ggplot(aes(x = stay_length, 
+             y = number_in_party)) +
+  geom_boxplot(aes(group = number_in_party), 
+               varwidth = TRUE, outlier.color = "red",)  + # zoom in on plot because there are a few distant outliers
+  labs(x = "Stay Length in Days (0-90)",
+       y = "Group Size") 
+
+
+# Look at distribution of group sizes for stays from 0-30 days
+groups %>% # change to groups!
+  filter(stay_length >= 0) %>% 
+  ggplot(aes(x = stay_length, 
+             y = number_in_party)) +
+  geom_jitter(aes(size = number_in_party), 
+              alpha = .2, show.legend = FALSE, na.rm = TRUE) +
+  xlim(-1, 25) +   # align x-axis
+  labs(y = "Group Size", 
+       x = "Stay Length in Days (0-25)") 
   
 ```
 
 ```{r echo=FALSE}
 
-#par(mfrow = c(1, 3))
-
-# Boxplots of stay lengths for various group sizes
-individuals %>%
-  filter(stay_length >= 0) %>% 
-  mutate(group_size = factor(number_in_party)) %>%
-  ggplot(aes(x = stay_length, y = number_in_party)) +
-  geom_boxplot(aes(group = number_in_party), varwidth = TRUE, outlier.color = "red",)  + # zoom in on plot because there are a few large outliers
-  ylab("Group Size") +
-  ggtitle("Stay Length in Days (0-90)")
-
-# Look at distribution of group sizes for stays from 0-30 days
-individuals %>%
-  filter(stay_length >= 0) %>% 
-  ggplot(aes(x = stay_length, y = number_in_party)) +
-  geom_jitter(alpha = .2) +
-  xlim(0, 30) +  
-  ylab("Group Size") +
-  ggtitle("Stay Length in Days (0-30)")
-
 # look at stay length distribution for individuals
 individuals %>%
-  filter(stay_length >= 0 & number_in_party == 1) %>% #filter out mistakes in recording year (negative values)
+  filter(stay_length >= 0 
+         & number_in_party == 1) %>% #filter out mistakes in recording year (negative values)
   ggplot(aes(x = stay_length)) +
-  geom_bar() +
-  xlim(0, 20) +
-  labs(title = "Stay Length in Days (0-20)", subtitle = "Individuals", x = "", y = "Number of Individuals") 
+  geom_bar(na.rm = TRUE) +
+  xlim(-1, 20) +
+  labs(title = "Stay Length in Days (0-20)", 
+       subtitle = "Individuals", 
+       x = element_blank(), 
+       y = "Number of Individuals") 
 
 # look at stay length distribution for different party sizes
 individuals %>%
-  filter(stay_length >= 0 & number_in_party < 5 & number_in_party != 1) %>% #filter out mistakes in recording year (negative values)
+  filter(stay_length >= 0 
+         & number_in_party < 5 
+         & number_in_party != 1) %>% #filter out mistakes in recording year (negative values)
   ggplot(aes(x = stay_length)) +
-  geom_bar() +
-  xlim(0, 20) +
+  geom_bar(na.rm = TRUE) +
+  xlim(-1, 20) +
   facet_wrap(~number_in_party) +
-  labs(title = "Stay Length in Days (0-20)", subtitle = "Groups of 5 or Fewer", x = "", y = "Number of Individuals") 
+  labs(title = element_blank(), 
+       subtitle = "Groups of 5 or Fewer", 
+       x = element_blank(), 
+       y = "Number of Individuals") 
 
 individuals %>%
   filter(stay_length >= 0 & number_in_party >= 5) %>% #filter out mistakes in recording year (negative values)
   ggplot(aes(x = stay_length)) +
-  geom_bar() +
-  xlim(0, 20) +
+  geom_bar(na.rm = TRUE) +
+  xlim(-1, 20) +
   facet_wrap(~number_in_party) +
-  labs(title = "Stay Length in Days (0-20)", subtitle = "Groups of 5 to 8", x = "", y = "Number of Individuals") 
+  labs(title = element_blank(), 
+       subtitle = "Groups of 5 to 8", 
+       x = element_blank(), 
+       y = "Number of Individuals") 
 
 ```
 

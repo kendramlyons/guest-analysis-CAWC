@@ -2,7 +2,7 @@
 
 import csv, pandas as pd
 
-df = pd.read_csv("data/travel_less_raw_limited_1.20.csv")
+df = pd.read_csv("data/group_all_clean_1_20_22.csv")
 
 col_names = df.columns
 col_names
@@ -14,4 +14,4 @@ in_df
 
 # Save data to disk
 
-in_df.to_csv("data/individual_travel_data_limited_1_20_22.csv")
+in_df.to_csv("data/individual_all_clean_1_20_22.csv")
