@@ -12,6 +12,7 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 ## Data
+
 ### Dates: 1/26/21 to 1/20/22
 
 ```{r data, echo=FALSE}
@@ -133,4 +134,39 @@ ggplot(aes(y = factor(country, top_ctrys),
 #+scale_fill_manual(values = palette2)
 ```
 
+MAKE A MAP!
+
+```{r}
+# load libraries
+library(ggrepel)
+library(usmap)
+
+destinations <- destinations %>%
+  add_row(state_name = "Hawaii", n = 0, percent = 0.0) %>%
+  add_row(state_name = "North Dakota", n = 0, percent = 0.0) %>%
+  add_row(state_name = "Wyoming", n = 0, percent = 0.0) %>%
+  rename("state" = state_name)
+
+centroids <- read_csv("data/us_states_centroids.csv") %>%
+  rename("state" = full) %>%
+  #mutate(fips = stringr::str_pad(fips, 2, pad = "0")) %>%
+  select(-fips)
+
+map_destinations <- centroids %>%
+  left_join(destinations)
+
+#destinations_map %>%
+plot_usmap(data = destinations, 
+           values = "n") +
+  theme(legend.position = "right") +
+  scale_fill_continuous(name = "Guests",
+                        low = "white", 
+                        high = "darkgreen") +
+  geom_label_repel(data = map_destinations,
+            aes(x = x,
+                y = y,
+                label = paste(abbr, n)),
+            size = 3)
+
+```
 
