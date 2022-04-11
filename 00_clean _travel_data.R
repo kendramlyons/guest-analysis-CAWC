@@ -42,7 +42,8 @@ write_csv(dt.cts, "data/arrival_date_counts_1.20.csv")
 
 # separate departure dates to fix year errors
 df <- df %>%
-  separate(day_m_d_yy, into = c("month", "day", "year"), sep = "/", remove = FALSE)
+  separate(day_m_d_yy, into = c("month", "day", "year"), 
+           sep = "/", remove = FALSE)
 
 # clean departure years
 df <- df %>%
@@ -56,11 +57,13 @@ df <- df %>%
 
 # re-join cleaned dates
 df <- df %>%
-  unite("departure_date", c("month", "day", "year"), sep = "/", na.rm = TRUE)
+  unite("departure_date", c("month", "day", "year"), 
+        sep = "/", na.rm = TRUE)
 
 # convert cleaned date stings into Date type
 df <- df %>%
-  mutate(departure_date = as.Date(departure_date, format = "%m/%d/%Y"))
+  mutate(departure_date = as.Date(departure_date, 
+                                  format = "%m/%d/%Y"))
 
 # GET STAY LENGTH
 # create new column with difference b/w arrival date and departure date
@@ -109,7 +112,8 @@ df <- df %>%
 
 # split destination column into state name and abbreviation
 df <- df %>%
-  separate(destination, sep = "\\s?[-,] ", into = c("state_name", "state_abb"), 
+  separate(destination, sep = "\\s?[-,] ", 
+           into = c("state_name", "state_abb"), 
            remove = FALSE)
 
 # Fix state_abb values
@@ -218,7 +222,7 @@ df <- df %>%
 df <- df %>%
   separate(language, sep = '\\/', into = c('language', 'language2'), remove = TRUE)
 
-# Clean up language spelling and remaining multiple entries
+# clean up language spelling and remaining multiple entries
 df <- df %>%
   mutate(language = case_when(  language == 'Cho Ol' ~ "Ch'ol",
                                 language == 'Haitian creole' ~ 'Creole', # Portuguese creole, too
@@ -236,7 +240,7 @@ df <- df %>%
   mutate(language2 = if_else(language == 'Telugu', 'English', language2))
 
 
-#Number of arrivals by language
+# number of arrivals by language
 unique(df$language)
 
 #
@@ -262,9 +266,9 @@ df <- df %>%
   separate(country_of_origin, sep = '[/,]', into = c('country', 'country2')) 
 
 
-#Number of arrivals by Country
-unique(df$country)
-#26 Countries on 8.1
+# number of arrivals by Country
+unique(df$country) # 26 Countries on 8.1
+
 cntry.cts <- df %>%
   count(country)
 

@@ -11,9 +11,7 @@ library(tidyverse)
 opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
-## Data
-
-### Dates: 1/26/21-1/20/22
+## Data Dates: 1/26/21-1/20/22
 
 ```{r data, echo = FALSE}
 
@@ -34,34 +32,32 @@ groups <- read_csv("data/group_all_clean_1_20_22.csv")
 theme_set(theme_minimal(15))
 
 # plot daily total arrivals (bars) and individual seven-day rolling mean (line)
-
-ggplot(arrivals_7_day, aes(x=arrival_date, y=n)) +
-  geom_col(fill='orange') +
+arrivals_7_day %>%
+ggplot(aes(x = arrival_date, y = n)) +
+  geom_col(fill = 'orange') +
   geom_line(aes(y = seven_avg), 
-            color='purple', size=.8) +
+            color = 'purple', size = .8) +
   #theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-  labs(title = x = element_blank(), 
+  labs(x = element_blank(), 
        y = "Number of Daily Arrivals") +
   scale_x_date(date_breaks="1 month", 
                date_labels="%b") # get rid of FEB on right 
 
 # weekly arrivals barplot with linear regression
-arrivals_wk <- individuals %>%
-  count(week_number)
-
-arrivals_wk %>%
+individuals %>%
+  count(week_number) %>%
   ggplot(aes(x = week_number, y = n)) +
-  geom_bar(stat = "identity", fill = 'orange') +
-  geom_smooth(method = "lm", formula = y ~ x, color = 'purple', size=.8) +
+  geom_bar(stat = "identity", 
+           fill = 'orange') +
+  geom_smooth(method = "lm", formula = y ~ x, 
+              color = 'purple', size=.8) +
   labs(title = "Weekly Arrivals", 
        x = element_blank(),
        y = "Number of Weekly Arrivals") 
 
 # Monthly arrivals boxplot
-monthly_arrivals <- individuals %>%
-  count(arrival_date, arrival_month, arrival_year)
-
-monthly_arrivals %>% #average weekly arrivals by month boxplots
+individuals %>%
+  count(arrival_date, arrival_month, arrival_year) %>% #average weekly arrivals by month boxplots
   mutate(arrival_month = factor(arrival_month)) %>%
   ggplot(aes(x = arrival_month, y = n)) +
   geom_boxplot(varwidth = TRUE, 
@@ -73,7 +69,7 @@ monthly_arrivals %>% #average weekly arrivals by month boxplots
 
 ## Group Size Trends Over Time
 
-```{r arrivals, echo=FALSE}
+```{r groups, echo=FALSE}
 # plot group size trends over time
 groups %>% 
   ggplot(aes(x = arrival_date, 
@@ -89,30 +85,30 @@ groups %>%
 
 ## Stay Length, All Guests
 
-```{r echo=FALSE}
+```{r stay, echo=FALSE}
 # plot stay length percentages
 stay_len_perc %>%
   ggplot(aes(x = stay_length, 
              y = percent)) +
-  geom_point(color="purple", na.rm = TRUE) +
-  geom_line(color="orange", na.rm = TRUE) +
-  xlim(0,50) +
-  labs(x = "Stay Length in Days (0-50)", 
+  geom_point(color = "purple", na.rm = TRUE) +
+  geom_line(color = "orange", na.rm = TRUE) +
+  xlim(0, 50) +
+  labs(x = "Stay Length in Days", 
        y = "Percent of Arrivals")
 
 # plot stay length counts
 individuals %>%
   filter(stay_length >= 0) %>% #filter out mistakes in recording year (negative values)
   ggplot(aes(x = stay_length)) +
-  geom_bar(fill = "orange", color = "purple", na.rm = TRUE) +
+  geom_bar(fill = "orange", na.rm = TRUE) +
   xlim(-1, 30) +
-  labs(x = "Stay Length in Days (0-30)", 
+  labs(x = "Stay Length in Days", 
        y = "Number of Individuals")
 ```
 
-## Stay Lenth Trends by Group Size
+## Stay Length Trends by Group Size
 
-```{r echo=FALSE}
+```{r gpstay, echo=FALSE}
 # Look at distribution of group sizes for stays from 0-30 days
 groups %>% 
   filter(stay_length >= 0) %>% 
@@ -122,7 +118,7 @@ groups %>%
               alpha = .2, show.legend = FALSE, na.rm = TRUE) +
   xlim(-1, 25) +   # align x-axis
   labs(y = "Group Size", 
-       x = "Stay Length in Days (0-25") 
+       x = "Stay Length in Days") 
 
 # violin plots of stay lengths for various group sizes
 groups %>%
