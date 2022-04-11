@@ -6,8 +6,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(ggrepel)
 library(knitr)
 library(tidyverse)
+library(usmap)
 opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
@@ -30,7 +32,7 @@ destinations <- drop_na(read_csv("data/destination_counts_1.20.csv"))
 
 ## Countries of Origin
 
-```{r echo=FALSE}
+```{r countries, echo=FALSE}
 
 # filter out countries with few arrivals
 top_ctrys <- c("Venezuela", "Brazil", "Cuba", "Ecuador", "Mexico", "Nicaragua", "Haiti", "Colombia",  "Guatemala", "Peru", "Honduras", "India" ) # update when data is updated
@@ -45,7 +47,7 @@ countries %>%
   ggplot(aes(y = reorder(country, percent),  
              x = percent)) +
   geom_col() +
-  labs(title = "Casa Alitas Arrivals by Origin Country", 
+  labs(title = "Arrivals by Origin Country", 
        y = element_blank(), 
        x = "Percent of Arrivals")
 
@@ -55,8 +57,8 @@ individuals %>%
   ggplot(aes(x = arrival_date)) +
   geom_bar(show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5)) +
-  labs(title = "Casa Alitas Daily Arrivals", 
-       subtitle = "Top 12 Countries of Origin", 
+  labs(title = "Daily Arrivals", 
+       #subtitle = "Top 12 Countries of Origin", 
        x = element_blank(), 
        y = "Number of Individuals, Daily") + 
   scale_x_date(date_breaks = "1 month", 
@@ -69,14 +71,14 @@ individuals %>%
 
 ## Languages
 
-```{r echo=FALSE}
+```{r languages, echo=FALSE}
 # plot language distribution 
 languages %>%
   filter(percent > .01) %>% # greater than 1% of arrivals
   ggplot(aes(y = reorder(language, percent), 
              x = percent)) +
   geom_col() +
-  labs(title = "Casa Alitas Arrivals by Language", 
+  labs(title = "Arrivals by Language", 
        y = element_blank(), 
        x = "Percent of Arrivals")+
   theme(axis.ticks = element_blank())
@@ -90,20 +92,53 @@ individuals %>%
   geom_point(alpha = .2) +
   labs(x = element_blank(), 
        y = element_blank()) +
-  scale_x_date(date_breaks="1 month", 
-               date_labels="%b") 
+  scale_x_date(date_breaks = "1 month", 
+               date_labels = "%b") 
   
 ```
 
 ## Destination States
 
-```{r echo=FALSE}
-top_states <- c("Florida", "Massachusetts", "New York", "Texas", "New Jersey", "California", "Pennsylvania", "Georgia", "Connecticut", "Illinois", "Utah", "Tennessee")
+MAKE A MAP!
 
+```{r destmap, echo=FALSE}
+# Add values of 0 for states with no travelers
+destinations <- destinations %>%
+  add_row(state_name = "Hawaii", n = 0, percent = 0.0) %>%
+  add_row(state_name = "North Dakota", n = 0, percent = 0.0) %>%
+  add_row(state_name = "Wyoming", n = 0, percent = 0.0) %>%
+  rename("state" = state_name)
+
+# get state centroids for labels
+centroids <- read_csv("data/us_states_centroids.csv") %>%
+  rename("state" = full)
+
+# add centroid data to destination data
+map_destinations <- centroids %>%
+  left_join(destinations)
+
+# plot data on U.S. map with descriptive labels
+plot_usmap(data = destinations, 
+           values = "n") +
+  theme(legend.position = "right") +
+  scale_fill_continuous(name = "Guests",
+                        low = "white", 
+                        high = "darkgreen") +
+  geom_label_repel(data = map_destinations,
+            aes(x = x,
+                y = y,
+                label = paste(abbr, n)),
+            size = 3)
+
+```
+
+```{r states, echo=FALSE}
+# vector with top (12) destination states
+top_states <- c("Florida", "Massachusetts", "New York", "Texas", "New Jersey", "California", "Pennsylvania", "Georgia", "Connecticut", "Illinois", "Utah", "Tennessee")
 
 destinations %>%
   filter(percent > .5) %>%
-  ggplot(aes(y = reorder(state_name, percent), 
+  ggplot(aes(y = reorder(state, percent), 
              x = percent)) +
   geom_col() +
   #theme(axis.text.x=element_text(angle=90, hjust=1, vjust=.5)) +
@@ -118,7 +153,7 @@ individuals %>%
          state_name %in% top_states) %>%
 ggplot(aes(y = factor(country, top_ctrys), 
            fill = state_abb)) +
-  geom_bar()+
+  geom_bar() +
   theme(axis.text.x=element_blank(),
         legend.title = element_text(size=12), 
         legend.text = element_text(size=11)) +
@@ -129,44 +164,12 @@ ggplot(aes(y = factor(country, top_ctrys),
   #scale_fill_grey(start = .2, end = .9)
   #scale_fill_manual(values = palette2)
   scale_fill_viridis_d()
-  
-#scale_fill_viridis_d()
-#+scale_fill_manual(values = palette2)
-```
-
-MAKE A MAP!
-
-```{r}
-# load libraries
-library(ggrepel)
-library(usmap)
-
-destinations <- destinations %>%
-  add_row(state_name = "Hawaii", n = 0, percent = 0.0) %>%
-  add_row(state_name = "North Dakota", n = 0, percent = 0.0) %>%
-  add_row(state_name = "Wyoming", n = 0, percent = 0.0) %>%
-  rename("state" = state_name)
-
-centroids <- read_csv("data/us_states_centroids.csv") %>%
-  rename("state" = full) %>%
-  #mutate(fips = stringr::str_pad(fips, 2, pad = "0")) %>%
-  select(-fips)
-
-map_destinations <- centroids %>%
-  left_join(destinations)
-
-#destinations_map %>%
-plot_usmap(data = destinations, 
-           values = "n") +
-  theme(legend.position = "right") +
-  scale_fill_continuous(name = "Guests",
-                        low = "white", 
-                        high = "darkgreen") +
-  geom_label_repel(data = map_destinations,
-            aes(x = x,
-                y = y,
-                label = paste(abbr, n)),
-            size = 3)
 
 ```
+
+
+
+
+
+
 
