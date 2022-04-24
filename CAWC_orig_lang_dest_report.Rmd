@@ -13,13 +13,12 @@ library(usmap)
 opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
-## Data
-
-### Dates: 1/26/21 to 1/20/22
+## Data Dates: 1/26/21 to 1/20/22
 
 ```{r data, echo=FALSE}
 
-individuals <- read_csv("data/individual_all_clean_1_20_22.csv")
+individuals <- read_csv("data/individual_all_clean_1_20_22.csv", na = c("", "NA")) %>% #
+  rename("GroupID" = ...1)
 
 countries <- drop_na(read_csv("data/country_counts_1.20.csv"))
 
@@ -35,36 +34,38 @@ destinations <- drop_na(read_csv("data/destination_counts_1.20.csv"))
 ```{r countries, echo=FALSE}
 
 # filter out countries with few arrivals
-top_ctrys <- c("Venezuela", "Brazil", "Cuba", "Ecuador", "Mexico", "Nicaragua", "Haiti", "Colombia",  "Guatemala", "Peru", "Honduras", "India" ) # update when data is updated
+top_ctrys <-  countries$country[0:12]
 
 # set plot theme
 theme_set(theme_minimal(15)) 
 #par(mfrow = c(1, 2))
 
-# Country of Origin percentages
-countries %>%
-    filter(percent > .01) %>%
-  ggplot(aes(y = reorder(country, percent),  
-             x = percent)) +
-  geom_col() +
-  labs(title = "Arrivals by Origin Country", 
-       y = element_blank(), 
-       x = "Percent of Arrivals")
+# Arrivals by country over time dot plot
+some_countries <- countries$country[countries$n > 3]
 
-# Top 12 countries of origin FW
+individuals %>%
+  filter(country %in% some_countries) %>%
+  ggplot(aes(x = arrival_date, 
+             y = factor(country, rev(countries$country[1:23])))) +
+  geom_point(alpha = .1) +
+  labs(title = "Arrivals over time by origin country",
+       x = element_blank(), 
+       y = element_blank()) +
+  scale_x_date(date_breaks = "1 month", 
+               date_labels = "%b") 
+
+# Top 12 countries of origin FW 
 individuals %>%
   filter(country %in% top_ctrys) %>%
   ggplot(aes(x = arrival_date)) +
   geom_bar(show.legend = FALSE) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5)) +
-  labs(title = "Daily Arrivals", 
-       #subtitle = "Top 12 Countries of Origin", 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  labs(title = "Daily arrivals, top origin countries", 
        x = element_blank(), 
-       y = "Number of Individuals, Daily") + 
-  scale_x_date(date_breaks = "1 month", 
+       y = "Number of Individuals") + 
+  scale_x_date(date_breaks = "3 month", 
                date_labels = "%b") + 
   facet_wrap(~factor(country, top_ctrys), scales = "free_y")
-
 
 
 ```
@@ -72,25 +73,17 @@ individuals %>%
 ## Languages
 
 ```{r languages, echo=FALSE}
-# plot language distribution 
-languages %>%
-  filter(percent > .01) %>% # greater than 1% of arrivals
-  ggplot(aes(y = reorder(language, percent), 
-             x = percent)) +
-  geom_col() +
-  labs(title = "Arrivals by Language", 
-       y = element_blank(), 
-       x = "Percent of Arrivals")+
-  theme(axis.ticks = element_blank())
 
 # plot arrivals of other language speakers over time
+some_langs = languages$language[languages$n > 4]
+
 individuals %>%
-  filter(language != "Spanish", 
-         language != "Portuguese") %>%
+  filter(language %in% some_langs) %>%
   ggplot(aes(x = arrival_date, 
-             y = language)) +
+             y = factor(language, rev(some_langs)))) +
   geom_point(alpha = .2) +
-  labs(x = element_blank(), 
+  labs(title = "Arrivals over time by language spoken",
+       x = element_blank(), 
        y = element_blank()) +
   scale_x_date(date_breaks = "1 month", 
                date_labels = "%b") 
@@ -98,8 +91,6 @@ individuals %>%
 ```
 
 ## Destination States
-
-MAKE A MAP!
 
 ```{r destmap, echo=FALSE}
 # Add values of 0 for states with no travelers
@@ -113,7 +104,7 @@ destinations <- destinations %>%
 centroids <- read_csv("data/us_states_centroids.csv") %>%
   rename("state" = full)
 
-# add centroid data to destination data
+# add centroid data to destination data ## MOVE THIS SECTION AND ABOVE TO CLEANING
 map_destinations <- centroids %>%
   left_join(destinations)
 
@@ -124,45 +115,52 @@ plot_usmap(data = destinations,
   scale_fill_continuous(name = "Guests",
                         low = "white", 
                         high = "darkgreen") +
-  geom_label_repel(data = map_destinations,
+  geom_label_repel(data = map_destinations, max.overlaps = 21,
             aes(x = x,
                 y = y,
                 label = paste(abbr, n)),
-            size = 3)
+            size = 3) +
+  labs(title = "Destinations of Casa Alitas guests")
 
 ```
 
 ```{r states, echo=FALSE}
 # vector with top (12) destination states
-top_states <- c("Florida", "Massachusetts", "New York", "Texas", "New Jersey", "California", "Pennsylvania", "Georgia", "Connecticut", "Illinois", "Utah", "Tennessee")
+top_states <- destinations$state[1:12]
+popular_dests <- destinations$state[destinations$n>150]
 
-destinations %>%
-  filter(percent > .5) %>%
-  ggplot(aes(y = reorder(state, percent), 
-             x = percent)) +
-  geom_col() +
-  #theme(axis.text.x=element_text(angle=90, hjust=1, vjust=.5)) +
-  labs(title = "Arrivals by Destination State", 
-       y = element_blank(), 
-       x = "Percent of Arrivals")
+individuals <- individuals %>%
+  drop_na(state_name) 
 
-palette2 <- c("#687d34","#330073","#57dd65", "#94299a","#7fe7c2","#be0063","#00e3e0","#970015","#5d6ec4","#92b426","#4c0054","#ebd460","#d496c4","#008b5e","#bc4c7d","#2e4700","#bb93d9","#cb9704","#854d88","#e2d67d","#ff93d1","#d67218","#7a0017","#ffa265","#9aca71","#8A7C64","#599861")
+individuals%>% # NA'S aren't removed from plot
+  filter(state_name %in% popular_dests) %>%
+  ggplot(aes(x = arrival_date, 
+             y = factor(state_name, rev(popular_dests)))) +
+  geom_point(alpha = .2, na.rm = TRUE) +
+  labs(title = "Arrivals over time by destination state",
+       x = element_blank(), 
+       y = element_blank()) +
+  scale_x_date(date_breaks = "1 month", 
+               date_labels = "%b") 
 
+# plot comparison of top origin countries and destination states
 individuals %>%
   filter(state_abb != 0, country != 0, country %in% top_ctrys,
          state_name %in% top_states) %>%
-ggplot(aes(y = factor(country, top_ctrys), 
+ggplot(aes(y = factor(country, rev(top_ctrys)), 
            fill = state_abb)) +
   geom_bar() +
   theme(axis.text.x=element_blank(),
-        legend.title = element_text(size=12), 
-        legend.text = element_text(size=11)) +
-  labs(title = "Top Origins & Destinations", 
-       y = "Country of Origin", 
+        #legend.title = element_text(size=12), 
+        legend.text = element_text(size=10),
+        legend.position = "top",
+        legend.justification = 0) +
+  labs(title = "Top origin countries and destination states", 
+       y = element_blank(), 
        x = element_blank(), 
-       fill = "Destination State") +
-  #scale_fill_grey(start = .2, end = .9)
-  #scale_fill_manual(values = palette2)
+       fill = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, reverse = TRUE, 
+                             label.position = "top")) +
   scale_fill_viridis_d()
 
 ```

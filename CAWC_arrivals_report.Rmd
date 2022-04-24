@@ -37,8 +37,8 @@ ggplot(aes(x = arrival_date, y = n)) +
   geom_col(fill = 'orange') +
   geom_line(aes(y = seven_avg), 
             color = 'purple', size = .8) +
-  #theme(axis.text.x = element_text(angle = 45, hjust=1)) +
-  labs(x = element_blank(), 
+  labs(title = "Change in daily arrivals over time",
+       x = element_blank(), 
        y = "Number of Daily Arrivals") +
   scale_x_date(date_breaks="1 month", 
                date_labels="%b") # get rid of FEB on right 
@@ -51,7 +51,7 @@ individuals %>%
            fill = 'orange') +
   geom_smooth(method = "lm", formula = y ~ x, 
               color = 'purple', size=.8) +
-  labs(title = "Weekly Arrivals", 
+  labs(title = "Change in weekly arrivals over time", 
        x = element_blank(),
        y = "Number of Weekly Arrivals") 
 
@@ -62,7 +62,7 @@ individuals %>%
   ggplot(aes(x = arrival_month, y = n)) +
   geom_boxplot(varwidth = TRUE, 
                outlier.color = "red") +
-  labs(title = "Monthly arrivals", 
+  labs(title = "Change in monthly arrivals over time", 
        x = element_blank(), 
        y = "Number of Daily Arrivals") 
 ```
@@ -78,7 +78,6 @@ groups %>%
               alpha = .1, show.legend = FALSE, na.rm = TRUE) +
   scale_x_date(date_breaks="1 month", 
                date_labels="%b") +
-  #theme(axis.text.x = element_text(angle = 45, hjust=1)) +
   labs(x = element_blank(), y = "Group Size") 
 
 ```
