@@ -17,7 +17,7 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv")
 
-individuals <- read_csv("data/individual_all_clean_1_20_22.csv")
+individuals <- read_csv("data/individual_all_clean_1_20_22.csv") %>% rename("groupID" = ...1)
 
 stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 
@@ -27,7 +27,7 @@ groups <- read_csv("data/group_all_clean_1_20_22.csv")
 
 ## Arrivals Timelines
 
-```{r arrivals, echo=FALSE}
+```{r arriv7day, echo=FALSE}
 # set plot theme
 theme_set(theme_minimal(15))
 
@@ -41,8 +41,22 @@ ggplot(aes(x = arrival_date, y = n)) +
        x = element_blank(), 
        y = "Number of Daily Arrivals") +
   scale_x_date(date_breaks="1 month", 
-               date_labels="%b") # get rid of FEB on right 
+               date_labels="%b") # get rid of FEB on right
+```
 
+Throughout **2021**, arrivals at Casa Alitas Welcome Center steadily increased from 
+just a few to more than _300 people_ arriving in a single day. However, there were 
+significant fluctuations in arrival numbers at several points in time, when policy 
+changes at the federal level affected how border authorities in states along the 
+Southern U.S.-Mexico border detained, deported and released individuals or groups 
+of migrants of different nationalities. Data entrusted to staff and volunteers at 
+Alitas illustrate these dramatic ups and downs in releases of migrants by CBP and 
+ICE, but cannot capture the intensity of the reality on the ground; neither the 
+uncertainty for those seeking asylum, nor the difficulty of coordinating the staff 
+and volunteers working to offer them food, shelter, medical aid, travel assistance 
+and information services (among other initiatives) according to a range of needs. 
+
+```{r arrivwk, echo=FALSE}
 # weekly arrivals barplot with linear regression
 individuals %>%
   count(week_number) %>%
@@ -53,23 +67,39 @@ individuals %>%
               color = 'purple', size=.8) +
   labs(title = "Change in weekly arrivals over time", 
        x = element_blank(),
-       y = "Number of Weekly Arrivals") 
+       y = "Number of Weekly Arrivals")
+```
 
+The increasing trend is even more evident with a regression line (purple) and 
+confidence interval (shaded), as are the abrupt and unusual drops in arrivals 
+late in the year. Removing some noise by examining weekly rather than daily 
+arrivals makes it easier to comprehend the scale of the fluctuations. In October 
+and December of 2021, there were several weeks with sudden and significant drops 
+in arrivals that were _far_ outside of the predictable range of usual variation. 
+However, knowledge of potential forthcoming policy changes gleaned through networks 
+of migrant-serving organizations or direct communication with border authorities 
+sometimes allowed staff to prepare for large drops or spikes in arrivals.  
+
+```{r arrivmon, echo=FALSE}
 # Monthly arrivals boxplot
 individuals %>%
-  count(arrival_date, arrival_month, arrival_year) %>% #average weekly arrivals by month boxplots
+  count(arrival_date, arrival_month, arrival_year) %>% #weekly arrivals by month boxplots
   mutate(arrival_month = factor(arrival_month)) %>%
   ggplot(aes(x = arrival_month, y = n)) +
   geom_boxplot(varwidth = TRUE, 
-               outlier.color = "red") +
+               outlier.color = "red",
+               ) +
   labs(title = "Change in monthly arrivals over time", 
        x = element_blank(), 
        y = "Number of Daily Arrivals") 
 ```
 
-## Group Size Trends Over Time
+The month-by-month average of daily arrivals stayed below one-hundred throughout 
+2021, only exceeding that number in the first twenty days of 2022. 
 
-```{r groups, echo=FALSE}
+## Group Size Over Time
+
+```{r grouptl, echo=FALSE}
 # plot group size trends over time
 groups %>% 
   ggplot(aes(x = arrival_date, 
@@ -84,7 +114,7 @@ groups %>%
 
 ## Stay Length, All Guests
 
-```{r stay, echo=FALSE}
+```{r stayperc, echo=FALSE}
 # plot stay length percentages
 stay_len_perc %>%
   ggplot(aes(x = stay_length, 
@@ -94,7 +124,10 @@ stay_len_perc %>%
   xlim(0, 50) +
   labs(x = "Stay Length in Days", 
        y = "Percent of Arrivals")
+```
 
+
+```{r staydist, echo=FALSE}
 # plot stay length counts
 individuals %>%
   filter(stay_length >= 0) %>% #filter out mistakes in recording year (negative values)
@@ -105,9 +138,9 @@ individuals %>%
        y = "Number of Individuals")
 ```
 
-## Stay Length Trends by Group Size
+## Stay Length by Group Size
 
-```{r gpstay, echo=FALSE}
+```{r gpstayjit, echo=FALSE}
 # Look at distribution of group sizes for stays from 0-30 days
 groups %>% 
   filter(stay_length >= 0) %>% 
@@ -117,8 +150,11 @@ groups %>%
               alpha = .2, show.legend = FALSE, na.rm = TRUE) +
   xlim(-1, 25) +   # align x-axis
   labs(y = "Group Size", 
-       x = "Stay Length in Days") 
+       x = "Stay Length in Days")
+```
 
+
+```{r gpstayvio, echo=FALSE}
 # violin plots of stay lengths for various group sizes
 groups %>%
   filter(stay_length >= 0) %>%
@@ -128,7 +164,10 @@ groups %>%
   geom_violin(color = "purple") +
   labs(x = "Stay Length in Days", 
        y = "Group Size")
+```
 
+
+```{r staybp, echo=FALSE}
 # box plots of stay lengths for various group sizes
 individuals %>%
   filter(stay_length >= 0) %>% 
