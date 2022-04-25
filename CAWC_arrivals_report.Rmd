@@ -25,7 +25,11 @@ individuals <- read_csv("data/individual_all_clean_1_20_22.csv") %>%
 
 stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 
-groups <- read_csv("data/group_all_clean_1_20_22.csv")
+#stay_len_gps <- read_csv("data/stay_length_percent_gps_1_20_22.csv")
+
+groups <- read_csv("data/group_all_clean_1_20_22.csv") %>%
+  filter(stay_length >= 0) %>%
+  select(arrival_date, number_in_party, stay_length)
 
 
 ```
@@ -95,13 +99,13 @@ arrivals_wkly %>%
 
 ```{r arrivmon, echo=FALSE}
 # Monthly arrivals boxplot
-individuals %>%
-  count(arrival_date, arrival_month, arrival_year) %>% #weekly arrivals by month boxplots
+arrivals_7_day %>% #weekly arrivals by month boxplots
   mutate(arrival_month = factor(arrival_month)) %>%
   ggplot(aes(x = arrival_month, y = n)) +
   geom_boxplot(varwidth = TRUE, 
                outlier.color = "red") +
-  labs(title = "Change in monthly arrivals over time", 
+  #geom_label(aes(label = arrivals_7_day %>% count(arrival_month) %>% pull(mean(n)))) +
+  labs(title = "Change in daily arrivals by month", 
        x = element_blank(), 
        y = "Number of Daily Arrivals") 
 ```
@@ -117,7 +121,8 @@ groups %>%
   ggplot(aes(x = arrival_date, 
              y = number_in_party)) +
   geom_jitter(aes(size = number_in_party), 
-              alpha = .1, show.legend = FALSE, na.rm = TRUE) +
+              alpha = .1, na.rm = TRUE, 
+              show.legend = FALSE) +
   scale_x_date(date_breaks="1 month", 
                date_labels="%b") +
   labs(x = element_blank(), y = "Group Size") 
@@ -176,7 +181,6 @@ to depart. . .
 ```{r gpstayjit, echo=FALSE}
 # Look at distribution of group sizes for stays from 0-30 days
 groups %>% 
-  filter(stay_length >= 0) %>% 
   ggplot(aes(x = stay_length, 
              y = number_in_party)) +
   geom_vline(xintercept = 6, size = 10, alpha = .2, color = "yellow") +
@@ -197,9 +201,7 @@ negative, which inevitably prolonged the quarantine.
 
 ```{r staybp, echo=FALSE}
 # box plots of stay lengths for various group sizes
-individuals %>%
-  filter(stay_length >= 0) %>% 
-  mutate(group_size = factor(number_in_party)) %>%
+groups  %>% 
   ggplot(aes(x = stay_length, 
              y = factor(number_in_party))) +
   geom_violin(aes(group = number_in_party), 
@@ -215,3 +217,15 @@ Individuals appear to move on more quickly in general, although some have extend
 stays due to extenuating circumstances such as issues with health, sponsors, court
 dates or paperwork. . . Most guests, regardless of party size, move on within a day or two.
 
+
+
+### Further Information
+
+- Casa Alitas Program Website: https://www.casaalitas.org/
+- Catholic Community Services of Southern Arizona: https://www.ccs-soaz.org/agencies-ministries/detail/alitas-aid-for-migrant-women-and-children
+- International Rescue Committee: https://www.rescue.org/article/what-happening-us-southern-border
+  - En espanol: https://www.rescue.org/article/que-esta-pasando-en-la-frontera-sur-de-estados-unidos
+- Southern Border Communities Coalition: https://www.southernborder.org/border_lens_asylum_seekers_at_the_border
+- Human Rights Watch: https://www.hrw.org/news/2021/03/05/mexico-abuses-against-asylum-seekers-us-border
+- American Immigration Council: https://www.americanimmigrationcouncil.org/research/guide-title-42-expulsions-border
+- U.S. Citizenship and Immigration Services: https://www.uscis.gov/humanitarian/refugees-and-asylum/asylum/obtaining-asylum-in-the-united-states
