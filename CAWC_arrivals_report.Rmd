@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(knitr)
+library(ggrepel)
 library(tidyverse)
 opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
@@ -17,15 +18,31 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv")
 
-individuals <- read_csv("data/individual_all_clean_1_20_22.csv") %>% rename("groupID" = ...1)
+arrivals_wkly <- read_csv("data/arrival_week_counts_1.20.csv")
+
+individuals <- read_csv("data/individual_all_clean_1_20_22.csv") %>% 
+  rename("groupID" = ...1)
 
 stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 
 groups <- read_csv("data/group_all_clean_1_20_22.csv")
 
+
 ```
 
 ## Arrivals Timelines
+
+Throughout **2021**, arrivals at Casa Alitas Welcome Center steadily increased from 
+just a few to more than _300 people_ arriving in a single day. However, there were 
+significant fluctuations in arrival numbers at several points in time, when policy 
+changes at the federal level affected how border authorities in states along the 
+Southern U.S.-Mexico border detained, deported and released individuals or groups 
+of migrants of different nationalities. Data entrusted to staff and volunteers at 
+Alitas illustrate these dramatic ups and downs in releases of migrants by CBP and 
+ICE, but cannot capture the intensity of the reality on the ground; neither the 
+uncertainty for those seeking asylum, nor the difficulty of coordinating the staff 
+and volunteers working to offer them food, shelter, medical aid, travel assistance, 
+information services (among other initiatives) according to a range of needs. 
 
 ```{r arriv7day, echo=FALSE}
 # set plot theme
@@ -37,48 +54,44 @@ ggplot(aes(x = arrival_date, y = n)) +
   geom_col(fill = 'orange') +
   geom_line(aes(y = seven_avg), 
             color = 'purple', size = .8) +
+  geom_label_repel(aes(label = label),
+                   nudge_y = 225,
+                   na.rm = TRUE) +
   labs(title = "Change in daily arrivals over time",
        x = element_blank(), 
        y = "Number of Daily Arrivals") +
-  scale_x_date(date_breaks="1 month", 
-               date_labels="%b") # get rid of FEB on right
+  scale_x_date(date_breaks = "1 month", 
+               date_labels = "%b",
+               date_minor_breaks = "1 year") # get rid of FEB on right
 ```
 
-Throughout **2021**, arrivals at Casa Alitas Welcome Center steadily increased from 
-just a few to more than _300 people_ arriving in a single day. However, there were 
-significant fluctuations in arrival numbers at several points in time, when policy 
-changes at the federal level affected how border authorities in states along the 
-Southern U.S.-Mexico border detained, deported and released individuals or groups 
-of migrants of different nationalities. Data entrusted to staff and volunteers at 
-Alitas illustrate these dramatic ups and downs in releases of migrants by CBP and 
-ICE, but cannot capture the intensity of the reality on the ground; neither the 
-uncertainty for those seeking asylum, nor the difficulty of coordinating the staff 
-and volunteers working to offer them food, shelter, medical aid, travel assistance 
-and information services (among other initiatives) according to a range of needs. 
+The increasing trend is even more evident in the plot below, which displays weekly 
+arrival numbers with a linear regression line (purple) and confidence interval 
+(shaded), and so are the abrupt and unusual drops in arrivals late in the year. 
+Removing some noise by examining weekly rather than daily arrivals makes the scale 
+of the fluctuations clearer. In October and December of 2021, there were several 
+weeks with sudden and significant drops in arrivals that were _far_ outside of the 
+predictable range of usual variation. However, knowledge of potential forthcoming 
+policy changes gleaned through networks of migrant-serving organizations or direct 
+communication with border authorities sometimes allowed staff to prepare for large 
+drops or spikes in arrivals. 
 
 ```{r arrivwk, echo=FALSE}
 # weekly arrivals barplot with linear regression
-individuals %>%
-  count(week_number) %>%
+arrivals_wkly %>%
   ggplot(aes(x = week_number, y = n)) +
   geom_bar(stat = "identity", 
            fill = 'orange') +
   geom_smooth(method = "lm", formula = y ~ x, 
               color = 'purple', size=.8) +
+  geom_label(aes(label = label),
+             nudge_y = 50,
+             na.rm = TRUE) +
   labs(title = "Change in weekly arrivals over time", 
        x = element_blank(),
        y = "Number of Weekly Arrivals")
 ```
 
-The increasing trend is even more evident with a regression line (purple) and 
-confidence interval (shaded), as are the abrupt and unusual drops in arrivals 
-late in the year. Removing some noise by examining weekly rather than daily 
-arrivals makes it easier to comprehend the scale of the fluctuations. In October 
-and December of 2021, there were several weeks with sudden and significant drops 
-in arrivals that were _far_ outside of the predictable range of usual variation. 
-However, knowledge of potential forthcoming policy changes gleaned through networks 
-of migrant-serving organizations or direct communication with border authorities 
-sometimes allowed staff to prepare for large drops or spikes in arrivals.  
 
 ```{r arrivmon, echo=FALSE}
 # Monthly arrivals boxplot
@@ -87,15 +100,14 @@ individuals %>%
   mutate(arrival_month = factor(arrival_month)) %>%
   ggplot(aes(x = arrival_month, y = n)) +
   geom_boxplot(varwidth = TRUE, 
-               outlier.color = "red",
-               ) +
+               outlier.color = "red") +
   labs(title = "Change in monthly arrivals over time", 
        x = element_blank(), 
        y = "Number of Daily Arrivals") 
 ```
 
 The month-by-month average of daily arrivals stayed below one-hundred throughout 
-2021, only exceeding that number in the first twenty days of 2022. 
+2021, only barely exceeding that number in the first twenty days of 2022. 
 
 ## Group Size Over Time
 
@@ -112,6 +124,9 @@ groups %>%
 
 ```
 
+Different policies affect individual and groups of asylum seekers differently. 
+
+
 ## Stay Length, All Guests
 
 ```{r stayperc, echo=FALSE}
@@ -119,24 +134,42 @@ groups %>%
 stay_len_perc %>%
   ggplot(aes(x = stay_length, 
              y = percent)) +
-  geom_point(color = "purple", na.rm = TRUE) +
+  geom_point(color = "purple", group = 1, na.rm = TRUE) +
   geom_line(color = "orange", na.rm = TRUE) +
-  xlim(0, 50) +
+  geom_label_repel(aes(label = label), 
+                   nudge_y = 30,
+                   na.rm = TRUE) + 
   labs(x = "Stay Length in Days", 
-       y = "Percent of Arrivals")
+       y = "Percent of Arrivals") +
+  scale_x_continuous(breaks = c(0, 5, 10 , 15, 20, 25, 30), 
+                     limits = c(0,35))
 ```
 
+Around 70% of guests moved on after one night or less. Most likely due to quarantine 
+and re-testing protocol when an individual or member of a group tested positive for 
+COVID-19, less than 2% of guests had stays of 6 days or 11 days respectively. 
 
 ```{r staydist, echo=FALSE}
 # plot stay length counts
-individuals %>%
-  filter(stay_length >= 0) %>% #filter out mistakes in recording year (negative values)
-  ggplot(aes(x = stay_length)) +
-  geom_bar(fill = "orange", na.rm = TRUE) +
-  xlim(-1, 30) +
+stay_len_perc %>% #filter out mistakes in recording year (negative values)
+  ggplot(aes(x = stay_length, y = n)) +
+  geom_vline(xintercept = 6, size = .5, alpha = .5, color = "grey") +
+  geom_vline(xintercept = 11, size = .5, alpha = .5, color = "grey") +
+  geom_vline(xintercept = 16, size = .5, alpha = .5, color = "grey") +
+  geom_col(fill = "orange", 
+           na.rm = TRUE) +
+  geom_label(aes(label = peak),
+             nudge_y = 500,
+             na.rm = TRUE) +
   labs(x = "Stay Length in Days", 
-       y = "Number of Individuals")
+       y = "Number of Individuals") +
+  scale_x_continuous(breaks = c(0, 5, 10 , 15, 20), 
+                     limits = c(-1, 20))
 ```
+
+Small peaks in stay lengths of six, eleven and sixteen days occurred, usually when 
+an individual or all members of a group tested negative for COVID-19 and were able 
+to depart. . . 
 
 ## Stay Length by Group Size
 
@@ -146,26 +179,21 @@ groups %>%
   filter(stay_length >= 0) %>% 
   ggplot(aes(x = stay_length, 
              y = number_in_party)) +
+  geom_vline(xintercept = 6, size = 10, alpha = .2, color = "yellow") +
+  geom_vline(xintercept = 11, size = 10, alpha = .2, color = "yellow") +
+  geom_vline(xintercept = 16, size = 10, alpha = .2, color = "yellow") +
   geom_jitter(aes(size = number_in_party), 
-              alpha = .2, show.legend = FALSE, na.rm = TRUE) +
+              show.legend = FALSE, 
+              alpha = .2, na.rm = TRUE) +
   xlim(-1, 25) +   # align x-axis
   labs(y = "Group Size", 
        x = "Stay Length in Days")
 ```
 
-
-```{r gpstayvio, echo=FALSE}
-# violin plots of stay lengths for various group sizes
-groups %>%
-  filter(stay_length >= 0) %>%
-  ggplot(aes(x = stay_length, 
-             y = factor(number_in_party)),
-         stat = "ydensity") +
-  geom_violin(color = "purple") +
-  labs(x = "Stay Length in Days", 
-       y = "Group Size")
-```
-
+Individuals with extended stays likely due to COVID-19 most commonly left after 
+six days. It was more common for family groups, generally quarantining together 
+in a hotel room where it was easy to infect those who had previously tested 
+negative, which inevitably prolonged the quarantine. 
 
 ```{r staybp, echo=FALSE}
 # box plots of stay lengths for various group sizes
@@ -173,13 +201,17 @@ individuals %>%
   filter(stay_length >= 0) %>% 
   mutate(group_size = factor(number_in_party)) %>%
   ggplot(aes(x = stay_length, 
-             y = number_in_party)) +
-  geom_boxplot(aes(group = number_in_party), 
-               varwidth = TRUE, outlier.color = "red",)  + # zoom in on plot because there are a few distant outliers
+             y = factor(number_in_party))) +
+  geom_violin(aes(group = number_in_party), 
+              color = "purple") +
+  geom_boxplot(varwidth = TRUE, 
+               outlier.color = "red")  + # zoom in on plot because there are a few distant outliers
   labs(x = "Stay Length in Days",
        y = "Group Size") 
 
-
 ```
 
+Individuals appear to move on more quickly in general, although some have extended 
+stays due to extenuating circumstances such as issues with health, sponsors, court
+dates or paperwork. . . Most guests, regardless of party size, move on within a day or two.
 

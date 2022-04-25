@@ -8,34 +8,12 @@
 
 # Load Libraries
 library(tidyverse)
-library(zoo)
+#library(zoo::rollmean)
 library(lubridate)
 
 ## Read in Data
-df <- read_csv("data/travel_less_raw_limited_1.20.csv")
-
-# Rename first column (index)
-df <- df %>%
-  rename("group_id" = ...1)
-
-## GET ARRIVAL TIMELINE DATA (ROLLING 7 DAY MEAN)
-
-# create new dataframe with number of individual arrivals per day
-dt.cts <- df %>%
-  count(arrival_date)
-
-# add new column with rolling 7-day-average arrivals
-dt.cts <- dt.cts %>%
-  mutate(seven_avg = rollmean(n, 7, align='center', fill=0))
-
-# replace zeros at beginning with average number of arrivals for first three days (2)
-dt.cts$seven_avg[1:3] <- 2
-
-# replace zeros at end with average from closest date
-dt.cts$seven_avg[351:353] <- dt.cts$seven_avg[350] #change index for new data
-
-# save data to disk 
-write_csv(dt.cts, "data/arrival_date_counts_1.20.csv")
+df <- read_csv("data/individual_all_clean_1_20_22.csv")%>%
+  rename("group_id" = ...1)# Rename first column (index)
 
 
 ## CLEAN DATES
@@ -43,27 +21,21 @@ write_csv(dt.cts, "data/arrival_date_counts_1.20.csv")
 # separate departure dates to fix year errors
 df <- df %>%
   separate(day_m_d_yy, into = c("month", "day", "year"), 
-           sep = "/", remove = FALSE)
-
-# clean departure years
-df <- df %>%
-  mutate(year = case_when(year == "2022" ~ "2022", # "2022" %in% arrival_datetime ~ "2022",
-                          year == "22" ~ "2022", # this might not do anything
+           sep = "/", remove = FALSE) %>%
+  mutate(year = case_when(year == "2022" ~ "2022", # clean departure years
+                          #year == "22" ~ "2022",
                           year == "22022" ~ "2022",
                           year == "2021" ~ "2021",
-                          year == "21" ~ "2021",
+                          #year == "21" ~ "2021", 
                           is.na(year) ~ "",
                           TRUE ~ "2021"))
-
 # re-join cleaned dates
 df <- df %>%
   unite("departure_date", c("month", "day", "year"), 
-        sep = "/", na.rm = TRUE)
-
-# convert cleaned date stings into Date type
-df <- df %>%
+        sep = "/", na.rm = TRUE, remove = FALSE) %>% # convert cleaned date stings into Date type
   mutate(departure_date = as.Date(departure_date, 
                                   format = "%m/%d/%Y"))
+
 
 # GET STAY LENGTH
 # create new column with difference b/w arrival date and departure date
@@ -73,11 +45,17 @@ df <- df %>%
 # Calculate percentages of stay lengths
 stay_len_perc <- df %>%
   filter(stay_length >= 0) %>%
-  count(stay_length) %>%
-  mutate(percent = (n/sum(n))*100)
+  count(stay_length, number_in_party) %>% #added number in party
+  mutate(percent = (n/sum(n))*100,
+         label = case_when(stay_length == 5 ~ "COVID-19 Re-testing",
+                           stay_length == 10 ~ "COVID-19 Re-testing"),
+         peak = case_when(stay_length == 1.0 ~ n,
+                          stay_length == 6.0 ~ n,
+                          stay_length == 11.0 ~ n,
+                          stay_length == 16.0 ~ n)) 
 
 # save data
-write_csv(stay_len_perc, "data/stay_length_percent_1_20_22.csv")
+write_csv(stay_len_perc, "data/stay_length_percent_gps_1_20_22.csv")
 
 # GET WEEK#, MONTH# AND YEAR
 # get week number, month number and year
@@ -96,6 +74,40 @@ df <- df %>% # changes week numbers in 2022 so they don't overlap with 2021
                                  TRUE ~ week_number),
          arrival_month = if_else((arrival_month == 1 & arrival_year == 2022), 
                                  13, arrival_month))
+
+## GET ARRIVAL TIMELINE DATA (ROLLING 7 DAY MEAN)
+
+# create new dataframe with number of individual arrivals per day
+dt.cts <- df %>%
+  count(arrival_date, week_number, arrival_month) %>% 
+  # add new column with rolling 7-day-average arrivals
+  mutate(seven_avg = zoo::rollmean(n, 7, align = 'center', fill = 0),
+         label = case_when(arrival_date == "2021-01-26" ~ 
+                             "January 26, 2021: Welcome Center begins recieving guests again",
+                           arrival_date == "2022-01-01" ~
+                             "January 1, 2022: Peak daily arrivals, 326 individuals")) 
+
+# replace zeros at beginning with average number of arrivals for first three days (2)
+dt.cts$seven_avg[1:3] <- mean(dt.cts$n[1:3])
+
+# replace zeros at end with average from closest date
+dt.cts$seven_avg[351:353] <- mean(dt.cts$n[351:353]) #change index for new data
+
+# save data to disk 
+write_csv(dt.cts, "data/arrival_date_counts_1.20.csv")
+
+
+wk.cts <- df %>%
+  count(week_number) %>%
+  mutate(label = case_when(week_number == 13 ~ n,
+                           week_number == 27 ~ n,
+                           week_number == 39 ~ n,
+                           week_number == 42 ~ n,
+                           week_number == 49 ~ n,
+                           week_number == 52 ~ n,
+                           week_number == 53 ~ n))
+
+write_csv(wk.cts, "data/arrival_week_counts_1.20.csv")
 
 
 ## CLEAN STATES
