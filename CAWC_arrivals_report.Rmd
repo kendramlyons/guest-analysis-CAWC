@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 library(knitr)
 library(ggrepel)
+library(ggthemes)
 library(tidyverse)
 opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
@@ -16,12 +17,13 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 ```{r data, echo = FALSE}
 
-arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv")
+arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv") %>%
+  mutate(arrival_month = factor(arrival_month))
 
 arrivals_wkly <- read_csv("data/arrival_week_counts_1.20.csv")
 
-individuals <- read_csv("data/individual_all_clean_1_20_22.csv") %>% 
-  rename("groupID" = ...1)
+#individuals <- read_csv("data/individual_all_clean_1_20_22.csv") %>% 
+  #rename("groupID" = ...1)
 
 stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 
@@ -30,6 +32,14 @@ stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
 groups <- read_csv("data/group_all_clean_1_20_22.csv") %>%
   filter(stay_length >= 0) %>%
   select(arrival_date, number_in_party, stay_length)
+
+policy_events <- read_csv("data/migration_policy_events_timeline_2021_ selected.csv", skip = 2) %>%
+  mutate(date = parse_date(date, format = "%m/%d/%Y"),
+         category = factor(category))
+
+key_policy_events <- policy_events %>%
+  filter(category %in% c('MPP ("Remain in Mexico")', 
+                         'Title 42', 'Temporary Protected Status')) #, 'Detention'
 
 
 ```
@@ -100,8 +110,8 @@ arrivals_wkly %>%
 ```{r arrivmon, echo=FALSE}
 # Monthly arrivals boxplot
 arrivals_7_day %>% #weekly arrivals by month boxplots
-  mutate(arrival_month = factor(arrival_month)) %>%
   ggplot(aes(x = arrival_month, y = n)) +
+  geom_hline(yintercept = 100, color = "darkgrey") +
   geom_boxplot(varwidth = TRUE, 
                outlier.color = "red") +
   #geom_label(aes(label = arrivals_7_day %>% count(arrival_month) %>% pull(mean(n)))) +
@@ -123,9 +133,19 @@ groups %>%
   geom_jitter(aes(size = number_in_party), 
               alpha = .1, na.rm = TRUE, 
               show.legend = FALSE) +
+    geom_vline(data = key_policy_events, 
+             aes(xintercept = date, 
+                 color = category),
+             na.rm = TRUE,
+             size =1) +
+  scale_color_manual(values = c("purple", "orange", "darkgreen")) +
   scale_x_date(date_breaks="1 month", 
                date_labels="%b") +
-  labs(x = element_blank(), y = "Group Size") 
+  labs(title = "Policy change effects by group size",
+       x = element_blank(), 
+       y = "Group Size",
+       color = element_blank()) +
+  theme(legend.position = "top")
 
 ```
 
@@ -139,6 +159,8 @@ Different policies affect individual and groups of asylum seekers differently.
 stay_len_perc %>%
   ggplot(aes(x = stay_length, 
              y = percent)) +
+  geom_vline(xintercept = 6, size = .5, color = "grey") +
+  geom_vline(xintercept = 11, size = .5, color = "grey") +
   geom_point(color = "purple", group = 1, na.rm = TRUE) +
   geom_line(color = "orange", na.rm = TRUE) +
   geom_label_repel(aes(label = label), 
@@ -158,9 +180,9 @@ COVID-19, less than 2% of guests had stays of 6 days or 11 days respectively.
 # plot stay length counts
 stay_len_perc %>% #filter out mistakes in recording year (negative values)
   ggplot(aes(x = stay_length, y = n)) +
-  geom_vline(xintercept = 6, size = .5, alpha = .5, color = "grey") +
-  geom_vline(xintercept = 11, size = .5, alpha = .5, color = "grey") +
-  geom_vline(xintercept = 16, size = .5, alpha = .5, color = "grey") +
+  geom_vline(xintercept = 6, size = .5, color = "grey") +
+  geom_vline(xintercept = 11, size = .5, color = "grey") +
+  geom_vline(xintercept = 16, size = .5, color = "grey") +
   geom_col(fill = "orange", 
            na.rm = TRUE) +
   geom_label(aes(label = peak),
@@ -183,6 +205,9 @@ to depart. . .
 groups %>% 
   ggplot(aes(x = stay_length, 
              y = number_in_party)) +
+  geom_vline(xintercept = 6, size = .5, color = "grey") +
+  geom_vline(xintercept = 11, size = .5, color = "grey") +
+  geom_vline(xintercept = 16, size = .5, color = "grey") +
   geom_vline(xintercept = 6, size = 10, alpha = .2, color = "yellow") +
   geom_vline(xintercept = 11, size = 10, alpha = .2, color = "yellow") +
   geom_vline(xintercept = 16, size = 10, alpha = .2, color = "yellow") +
@@ -221,11 +246,15 @@ dates or paperwork. . . Most guests, regardless of party size, move on within a 
 
 ### Further Information
 
-- Casa Alitas Program Website: https://www.casaalitas.org/
-- Catholic Community Services of Southern Arizona: https://www.ccs-soaz.org/agencies-ministries/detail/alitas-aid-for-migrant-women-and-children
-- International Rescue Committee: https://www.rescue.org/article/what-happening-us-southern-border
+- **American Immigration Council**: https://www.americanimmigrationcouncil.org/research/guide-title-42-expulsions-border
+- **Arizona Public Media Video Feature**: https://www.youtube.com/watch?v=6FUyY0_exoo
+- **Casa Alitas Program Website**: https://www.casaalitas.org/
+- **Catholic Community Services of Southern Arizona**: https://www.ccs-soaz.org/agencies-ministries/detail/alitas-aid-for-migrant-women-and-children
+- **FEMA Funds for Migrant Aid**: https://tucson.com/news/local/pima-county-uncertain-federal-funds-to-support-asylum-seekers-will-continue/article_1d07a4c8-901d-11ec-8e6c-a37e4491dcf4.html
+- **Human Rights Watch**: https://www.hrw.org/news/2021/03/05/mexico-abuses-against-asylum-seekers-us-border
+- **International Rescue Committee**: https://www.rescue.org/article/what-happening-us-southern-border
   - En espanol: https://www.rescue.org/article/que-esta-pasando-en-la-frontera-sur-de-estados-unidos
-- Southern Border Communities Coalition: https://www.southernborder.org/border_lens_asylum_seekers_at_the_border
-- Human Rights Watch: https://www.hrw.org/news/2021/03/05/mexico-abuses-against-asylum-seekers-us-border
-- American Immigration Council: https://www.americanimmigrationcouncil.org/research/guide-title-42-expulsions-border
-- U.S. Citizenship and Immigration Services: https://www.uscis.gov/humanitarian/refugees-and-asylum/asylum/obtaining-asylum-in-the-united-states
+- **Southern Border Communities Coalition**: https://www.southernborder.org/border_lens_asylum_seekers_at_the_border
+- **Tucson Sentinel**: https://www.tucsonsentinel.com/local/report/030122_casa_alitas_budget/pima-county-spending-13-million-per-month-shelter-migrants-released-by-dhs/
+- **Tucson Weekly**: https://www.tucsonweekly.com/tucson/crowded-house-casa-alitas-faces-increased-pressure-as-more-migrants-seek-refugee-status/Content?oid=30449369
+- **U.S. Citizenship and Immigration Services**: https://www.uscis.gov/humanitarian/refugees-and-asylum/asylum/obtaining-asylum-in-the-united-states
