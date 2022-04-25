@@ -15,10 +15,11 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 ## Data Dates: 1/26/21 to 1/20/22
 
-```{r data, echo=FALSE}
+```{r data, include = FALSE}
 
 individuals <- read_csv("data/individual_all_clean_1_20_22.csv", na = c("", "NA")) %>% #
-  rename("GroupID" = ...1)
+  rename("GroupID" = ...1) %>%
+  select(arrival_date, GroupID, language, country, state_name, state_abb)
 
 countries <- drop_na(read_csv("data/country_counts_1.20.csv"))
 
@@ -26,53 +27,39 @@ languages <- drop_na(read_csv("data/language_counts_1.20.csv"))
 
 destinations <- drop_na(read_csv("data/destination_counts_1.20.csv"))
 
-```
+# Add values of 0 for states with no travelers
+destinations <- destinations %>%
+  add_row(state_name = "Hawaii", n = 0, percent = 0.0) %>%
+  add_row(state_name = "North Dakota", n = 0, percent = 0.0) %>%
+  add_row(state_name = "Wyoming", n = 0, percent = 0.0) %>%
+  rename("state" = state_name)
 
+# get state centroids for labels
+centroids <- read_csv("data/us_states_centroids.csv") %>%
+  rename("state" = full)
 
-## Countries of Origin
+# add centroid data to destination data ## MOVE THIS SECTION AND ABOVE TO CLEANING
+map_destinations <- centroids %>%
+  left_join(destinations)
 
-```{r countries, echo=FALSE}
+groups <- read_csv("data/group_all_clean_1_20_22.csv") %>%
+  filter(stay_length >= 0) %>%
+  select(arrival_date, number_in_party, country, language, state_name, state_abb)
 
-# filter out countries with few arrivals
-top_ctrys <-  countries$country[0:12]
+policy_events <- read_csv("data/migration_policy_events_timeline_2021_ selected.csv", skip = 2) %>%
+  mutate(date = parse_date(date, format = "%m/%d/%Y"),
+         category = factor(category))
 
-# set plot theme
-theme_set(theme_minimal(15)) 
-#par(mfrow = c(1, 2))
-
-# Arrivals by country over time dot plot
-some_countries <- countries$country[countries$n > 3]
-
-individuals %>%
-  filter(country %in% some_countries) %>%
-  ggplot(aes(x = arrival_date, 
-             y = factor(country, rev(countries$country[1:23])))) +
-  geom_point(alpha = .1) +
-  labs(title = "Arrivals over time by origin country",
-       x = element_blank(), 
-       y = element_blank()) +
-  scale_x_date(date_breaks = "1 month", 
-               date_labels = "%b") 
-
-# Top 12 countries of origin FW 
-individuals %>%
-  filter(country %in% top_ctrys) %>%
-  ggplot(aes(x = arrival_date)) +
-  geom_bar(show.legend = FALSE) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
-  labs(title = "Daily arrivals, top origin countries", 
-       x = element_blank(), 
-       y = "Number of Individuals") + 
-  scale_x_date(date_breaks = "3 month", 
-               date_labels = "%b") + 
-  facet_wrap(~factor(country, top_ctrys), scales = "free_y")
-
+key_policy_events <- policy_events %>%
+  filter(category %in% c('MPP ("Remain in Mexico")', 
+                         'Title 42', 'Temporary Protected Status')) #, 'Detention'
 
 ```
-
 ## Languages
 
 ```{r languages, echo=FALSE}
+# set plot theme
+theme_set(theme_minimal(15))
 
 # plot arrivals of other language speakers over time
 some_langs = languages$language[languages$n > 4]
@@ -90,24 +77,83 @@ individuals %>%
   
 ```
 
+## Countries of Origin
+
+```{r orig_fw, echo=FALSE}
+ # filter out countries with few arrivals
+top_ctrys <-  countries$country[0:12]
+# Top 12 countries of origin FW 
+individuals %>%
+  filter(country %in% top_ctrys) %>%
+  ggplot(aes(x = arrival_date)) +
+  geom_bar(show.legend = FALSE) +
+  labs(title = "Daily arrivals over time, top origin countries", 
+       x = element_blank(), 
+       y = "Number of Individuals") + 
+  facet_wrap(~factor(country, top_ctrys), 
+             scales = "free_y")  +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
+  scale_x_date(date_breaks = "3 month", 
+               date_labels = "%b")
+```
+
+```{r orig_policy, echo=FALSE}
+# get countries with arrivals greater than 100
+some_ctrys <- countries$country[countries$n > 100]
+# Arrivals by country over time dot plot
+individuals %>%
+  filter(country %in% some_ctrys) %>%
+  ggplot(aes(x = arrival_date, 
+             y = factor(country, rev(countries$country[1:23])))) +
+  geom_vline(data = key_policy_events, 
+             aes(xintercept = date, 
+                 color = category),
+             na.rm = TRUE,
+             size = .75) +
+  geom_point(alpha = .1) +
+  theme(legend.position = "top", 
+        legend.justification = 0) +
+  scale_color_manual(values = c("purple", "orange", "darkgreen")) +
+  labs(title = "Policy change effects by origin country",
+       x = element_blank(), 
+       y = element_blank(),
+       color = element_blank()) +
+  scale_x_date(date_breaks = "1 month", 
+               date_labels = "%b") 
+
+
+key_policy_events %>%
+  kable(caption = "Immigration Policy Changes in 2021 (Source: Investigative Reporting Workshop)")
+
+```
+
 ## Destination States
 
+```{r destorig, echo=FALSE}
+# get top destination states
+top_states <- destinations$state[1:12]
+# plot comparison of top origin countries and destination states
+individuals %>%
+  filter(country %in% top_ctrys,
+         state_name %in% top_states) %>%
+ggplot(aes(y = factor(country, rev(top_ctrys)), 
+           fill = state_abb)) +
+  geom_bar() +
+  theme(axis.text.x=element_blank(),
+        legend.text = element_text(size=10),
+        legend.position = "top",
+        legend.justification = 0) +
+  labs(title = "Top destination states by origin country", 
+       y = element_blank(), 
+       x = element_blank(), 
+       fill = element_blank()) +
+  guides(fill = guide_legend(nrow = 1, reverse = TRUE, 
+                             label.position = "top")) +
+  scale_fill_viridis_d()
+
+```
+
 ```{r destmap, echo=FALSE}
-# Add values of 0 for states with no travelers
-destinations <- destinations %>%
-  add_row(state_name = "Hawaii", n = 0, percent = 0.0) %>%
-  add_row(state_name = "North Dakota", n = 0, percent = 0.0) %>%
-  add_row(state_name = "Wyoming", n = 0, percent = 0.0) %>%
-  rename("state" = state_name)
-
-# get state centroids for labels
-centroids <- read_csv("data/us_states_centroids.csv") %>%
-  rename("state" = full)
-
-# add centroid data to destination data ## MOVE THIS SECTION AND ABOVE TO CLEANING
-map_destinations <- centroids %>%
-  left_join(destinations)
-
 # plot data on U.S. map with descriptive labels
 plot_usmap(data = destinations, 
            values = "n") +
@@ -124,15 +170,11 @@ plot_usmap(data = destinations,
 
 ```
 
-```{r states, echo=FALSE}
+```{r desttl, echo=FALSE}
 # vector with top (12) destination states
-top_states <- destinations$state[1:12]
 popular_dests <- destinations$state[destinations$n>150]
 
-individuals <- individuals %>%
-  drop_na(state_name) 
-
-individuals%>% # NA'S aren't removed from plot
+groups %>% 
   filter(state_name %in% popular_dests) %>%
   ggplot(aes(x = arrival_date, 
              y = factor(state_name, rev(popular_dests)))) +
@@ -141,33 +183,14 @@ individuals%>% # NA'S aren't removed from plot
        x = element_blank(), 
        y = element_blank()) +
   scale_x_date(date_breaks = "1 month", 
-               date_labels = "%b") 
-
-# plot comparison of top origin countries and destination states
-individuals %>%
-  filter(state_abb != 0, country != 0, country %in% top_ctrys,
-         state_name %in% top_states) %>%
-ggplot(aes(y = factor(country, rev(top_ctrys)), 
-           fill = state_abb)) +
-  geom_bar() +
-  theme(axis.text.x=element_blank(),
-        #legend.title = element_text(size=12), 
-        legend.text = element_text(size=10),
-        legend.position = "top",
-        legend.justification = 0) +
-  labs(title = "Top origin countries and destination states", 
-       y = element_blank(), 
-       x = element_blank(), 
-       fill = element_blank()) +
-  guides(fill = guide_legend(nrow = 1, reverse = TRUE, 
-                             label.position = "top")) +
-  scale_fill_viridis_d()
-
+               date_labels = "%b")
 ```
 
 
 
 
+
+### Further Resources
 
 
 

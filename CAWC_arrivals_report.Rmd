@@ -133,11 +133,11 @@ groups %>%
   geom_jitter(aes(size = number_in_party), 
               alpha = .1, na.rm = TRUE, 
               show.legend = FALSE) +
-    geom_vline(data = key_policy_events, 
+  geom_vline(data = key_policy_events, 
              aes(xintercept = date, 
                  color = category),
              na.rm = TRUE,
-             size =1) +
+             size =.75) +
   scale_color_manual(values = c("purple", "orange", "darkgreen")) +
   scale_x_date(date_breaks="1 month", 
                date_labels="%b") +
@@ -145,8 +145,7 @@ groups %>%
        x = element_blank(), 
        y = "Group Size",
        color = element_blank()) +
-  theme(legend.position = "top")
-
+  theme(legend.position = "top", legend.justification = 0)
 ```
 
 Different policies affect individual and groups of asylum seekers differently. 
@@ -235,7 +234,6 @@ groups  %>%
                outlier.color = "red")  + # zoom in on plot because there are a few distant outliers
   labs(x = "Stay Length in Days",
        y = "Group Size") 
-
 ```
 
 Individuals appear to move on more quickly in general, although some have extended 
@@ -244,7 +242,7 @@ dates or paperwork. . . Most guests, regardless of party size, move on within a 
 
 
 
-### Further Information
+### Further Resources
 
 - **American Immigration Council**: https://www.americanimmigrationcouncil.org/research/guide-title-42-expulsions-border
 - **Arizona Public Media Video Feature**: https://www.youtube.com/watch?v=6FUyY0_exoo
