@@ -38,13 +38,9 @@ destinations <- destinations %>%
 centroids <- read_csv("data/us_states_centroids.csv") %>%
   rename("state" = full)
 
-# add centroid data to destination data ## MOVE THIS SECTION AND ABOVE TO CLEANING
+# add centroid data to destination data 
 map_destinations <- centroids %>%
   left_join(destinations)
-
-groups <- read_csv("data/group_all_clean_1_20_22.csv") %>%
-  filter(stay_length >= 0) %>%
-  select(arrival_date, number_in_party, country, language, state_name, state_abb)
 
 policy_events <- read_csv("data/migration_policy_events_timeline_2021_ selected.csv", skip = 2) %>%
   mutate(date = parse_date(date, format = "%m/%d/%Y"),
@@ -121,7 +117,7 @@ individuals %>%
   scale_x_date(date_breaks = "1 month", 
                date_labels = "%b") 
 
-
+# print table with policy change details
 key_policy_events %>%
   kable(caption = "Immigration Policy Changes in 2021 (Source: Investigative Reporting Workshop)")
 
@@ -174,7 +170,7 @@ plot_usmap(data = destinations,
 # vector with top (12) destination states
 popular_dests <- destinations$state[destinations$n>150]
 
-groups %>% 
+individuals %>% 
   filter(state_name %in% popular_dests) %>%
   ggplot(aes(x = arrival_date, 
              y = factor(state_name, rev(popular_dests)))) +
