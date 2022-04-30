@@ -2,22 +2,27 @@
 title: "CAWC Origins, Languages & Destinations Report"
 author: "Kendra Lyons"
 date: "3/11/2022"
-output: html_document
+output: 
+  html_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
 library(ggrepel)
 library(knitr)
 library(tidyverse)
+library(scales)
 library(usmap)
 opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
 ## Data Dates: 1/26/21 to 1/20/22
 
+Data for this project were collected by volunteers and staff at Casa Alitas Welcome Center in Tucson, Arizona. 
+
 ```{r data, include = FALSE}
 
-individuals <- read_csv("data/individual_all_clean_1_20_22.csv", na = c("", "NA")) %>% #
+individuals <- read_csv("data/individual_all_clean_1_20_22.csv", na = c("", "NA")) %>% 
   rename("GroupID" = ...1) %>%
   select(arrival_date, GroupID, language, country, state_name, state_abb)
 
@@ -42,20 +47,24 @@ centroids <- read_csv("data/us_states_centroids.csv") %>%
 map_destinations <- centroids %>%
   left_join(destinations)
 
-policy_events <- read_csv("data/migration_policy_events_timeline_2021_ selected.csv", skip = 2) %>%
+# get immigration policy event data 
+policy_events <- read_csv("data/migration_policy_events_timeline_2021_selected.csv", skip = 2) %>%
   mutate(date = parse_date(date, format = "%m/%d/%Y"),
-         category = factor(category))
+         category = category)
 
+# select events of interest
 key_policy_events <- policy_events %>%
   filter(category %in% c('MPP ("Remain in Mexico")', 
-                         'Title 42', 'Temporary Protected Status')) #, 'Detention'
+                         'Title 42', 
+                         'Temporary Protected Status')) #, 'Detention'
 
 ```
+
 ## Languages
 
 ```{r languages, echo=FALSE}
 # set plot theme
-theme_set(theme_minimal(15))
+theme_set(theme_minimal(14))
 
 # plot arrivals of other language speakers over time
 some_langs = languages$language[languages$n > 4]
@@ -69,7 +78,8 @@ individuals %>%
        x = element_blank(), 
        y = element_blank()) +
   scale_x_date(date_breaks = "1 month", 
-               date_labels = "%b") 
+               date_labels = "%b",
+               expand = c(.02,-.02)) 
   
 ```
 
@@ -88,9 +98,9 @@ individuals %>%
        y = "Number of Individuals") + 
   facet_wrap(~factor(country, top_ctrys), 
              scales = "free_y")  +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) + 
   scale_x_date(date_breaks = "3 month", 
-               date_labels = "%b")
+               date_labels = "%b",
+               expand = c(.02,-.02))
 ```
 
 ```{r orig_policy, echo=FALSE}
@@ -115,7 +125,8 @@ individuals %>%
        y = element_blank(),
        color = element_blank()) +
   scale_x_date(date_breaks = "1 month", 
-               date_labels = "%b") 
+               date_labels = "%b",
+               expand = c(.02,-.02)) 
 
 # print table with policy change details
 key_policy_events %>%
@@ -134,12 +145,13 @@ individuals %>%
          state_name %in% top_states) %>%
 ggplot(aes(y = factor(country, rev(top_ctrys)), 
            fill = state_abb)) +
-  geom_bar() +
+  geom_bar(position = "fill") +
   theme(axis.text.x=element_blank(),
         legend.text = element_text(size=10),
         legend.position = "top",
-        legend.justification = 0) +
-  labs(title = "Top destination states by origin country", 
+        legend.justification = 0,
+        legend.spacing.x = unit(.5, 'cm')) +
+  labs(title = "Popular destination states by origin country", 
        y = element_blank(), 
        x = element_blank(), 
        fill = element_blank()) +
@@ -157,10 +169,11 @@ plot_usmap(data = destinations,
   scale_fill_continuous(name = "Guests",
                         low = "white", 
                         high = "darkgreen") +
-  geom_label_repel(data = map_destinations, max.overlaps = 21,
-            aes(x = x,
-                y = y,
-                label = paste(abbr, n)),
+  geom_label_repel(data = map_destinations, 
+                   max.overlaps = 21,
+                   aes(x = x,
+                       y = y,
+                       label = paste(abbr, comma(n, accuracy=1))),
             size = 3) +
   labs(title = "Destinations of Casa Alitas guests")
 
@@ -179,11 +192,9 @@ individuals %>%
        x = element_blank(), 
        y = element_blank()) +
   scale_x_date(date_breaks = "1 month", 
-               date_labels = "%b")
+               date_labels = "%b",
+               expand = c(.02,-.02))
 ```
-
-
-
 
 
 ### Further Resources

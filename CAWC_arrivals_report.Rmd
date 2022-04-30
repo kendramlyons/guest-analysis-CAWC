@@ -2,7 +2,9 @@
 title: "CAWC Arrivals Report"
 author: "Kendra Lyons"
 date: "2/2/2022"
-output: html_document
+output: 
+  html_document:
+    toc: true
 ---
 
 ```{r setup, include=FALSE}
@@ -15,6 +17,8 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 ## Data Dates: 1/26/21-1/20/22
 
+Data for this project were collected by volunteers and staff at Casa Alitas Welcome Center in Tucson, Arizona. 
+
 ```{r data, echo = FALSE}
 
 arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv") %>%
@@ -22,24 +26,21 @@ arrivals_7_day <- read_csv("data/arrival_date_counts_1.20.csv") %>%
 
 arrivals_wkly <- read_csv("data/arrival_week_counts_1.20.csv")
 
-#individuals <- read_csv("data/individual_all_clean_1_20_22.csv") %>% 
-  #rename("groupID" = ...1)
-
 stay_len_perc <- read_csv("data/stay_length_percent_1_20_22.csv")
-
-#stay_len_gps <- read_csv("data/stay_length_percent_gps_1_20_22.csv")
 
 groups <- read_csv("data/group_all_clean_1_20_22.csv") %>%
   filter(stay_length >= 0) %>%
   select(arrival_date, number_in_party, stay_length)
 
-policy_events <- read_csv("data/migration_policy_events_timeline_2021_ selected.csv", skip = 2) %>%
-  mutate(date = parse_date(date, format = "%m/%d/%Y"),
-         category = factor(category))
+# get policy events
+policy_events <- read_csv("data/migration_policy_events_timeline_2021_selected.csv", skip = 2) %>%
+  mutate(date = parse_date(date, format = "%m/%d/%Y"))
 
+#select key policy events
 key_policy_events <- policy_events %>%
   filter(category %in% c('MPP ("Remain in Mexico")', 
-                         'Title 42', 'Temporary Protected Status')) #, 'Detention'
+                         'Title 42', 
+                         'Temporary Protected Status')) #, 'Detention'
 
 
 ```
@@ -160,6 +161,7 @@ stay_len_perc %>%
              y = percent)) +
   geom_vline(xintercept = 6, size = .5, color = "grey") +
   geom_vline(xintercept = 11, size = .5, color = "grey") +
+  geom_hline(yintercept=2.5, size = .5, color = "grey") +
   geom_point(color = "purple", group = 1, na.rm = TRUE) +
   geom_line(color = "orange", na.rm = TRUE) +
   geom_label_repel(aes(label = label), 
@@ -167,8 +169,9 @@ stay_len_perc %>%
                    na.rm = TRUE) + 
   labs(x = "Stay Length in Days", 
        y = "Percent of Arrivals") +
-  scale_x_continuous(breaks = c(0, 5, 10 , 15, 20, 25, 30), 
-                     limits = c(0,35))
+  scale_x_continuous(breaks = seq(0, 35, 2), 
+                     limits = c(0,35)) +
+  theme(axis.text.y.left = )
 ```
 
 Around 70% of guests moved on after one night or less. Most likely due to quarantine 
@@ -189,7 +192,7 @@ stay_len_perc %>% #filter out mistakes in recording year (negative values)
              na.rm = TRUE) +
   labs(x = "Stay Length in Days", 
        y = "Number of Individuals") +
-  scale_x_continuous(breaks = c(0, 5, 10 , 15, 20), 
+  scale_x_continuous(breaks = seq(0, 20, 2), 
                      limits = c(-1, 20))
 ```
 
@@ -229,7 +232,7 @@ groups  %>%
   ggplot(aes(x = stay_length, 
              y = factor(number_in_party))) +
   geom_violin(aes(group = number_in_party), 
-              color = "purple") +
+              color = "darkgrey") +
   geom_boxplot(varwidth = TRUE, 
                outlier.color = "red")  + # zoom in on plot because there are a few distant outliers
   labs(x = "Stay Length in Days",
