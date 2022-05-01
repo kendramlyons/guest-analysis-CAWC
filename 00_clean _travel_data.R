@@ -97,7 +97,7 @@ dt.cts$seven_avg[351:353] <- mean(dt.cts$n[351:353]) #change index for new data
 write_csv(dt.cts, "data/arrival_date_counts_1.20.csv")
 
 
-wk.cts <- df %>%
+wk.cts <- df %>% # add start date ?
   count(week_number) %>%
   mutate(label = case_when(week_number == 13 ~ n,
                            week_number == 27 ~ n,

@@ -116,7 +116,7 @@ individuals %>%
                  color = category),
              na.rm = TRUE,
              size = .75) +
-  geom_point(alpha = .1) +
+  geom_point(alpha=.2) +
   theme(legend.position = "top", 
         legend.justification = 0) +
   scale_color_manual(values = c("purple", "orange", "darkgreen")) +
@@ -145,7 +145,7 @@ individuals %>%
          state_name %in% top_states) %>%
 ggplot(aes(y = factor(country, rev(top_ctrys)), 
            fill = state_abb)) +
-  geom_bar(position = "fill") +
+  geom_bar(position = "fill") + # normalize bar height
   theme(axis.text.x=element_blank(),
         legend.text = element_text(size=10),
         legend.position = "top",
