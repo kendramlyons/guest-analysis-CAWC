@@ -1,6 +1,6 @@
 # guest-analysis-CAWC
 **Guest stats report for Casa Alitas Program**
-  Updated: 4/8/2022
+  Updated: 5/6/2022
 
 **Curation Rationale**
 
@@ -37,7 +37,7 @@ Data have been pre-cleaned but may still contain errors. Collection is by group,
 
 **Privacy Statement**
 
-Because much of the data collected about people who pass through the shelter are of a personal and sensitive nature, raw data is not stored in this repository. Data have been de-identified by removing private and non-relevant variables. 
+Because much of the data collected about people who pass through the shelter are of a personal and sensitive nature, raw data is not stored in this repository. Data have been de-identified by removing names and other private, non-relevant information. 
 
 **Further Information**
 

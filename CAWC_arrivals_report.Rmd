@@ -1,7 +1,7 @@
 ---
 title: "CAWC Arrivals Report"
 author: "Kendra Lyons"
-date: "2/2/2022"
+date: "5/6/2022"
 output: 
   html_document:
     toc: true
@@ -27,10 +27,14 @@ authorities at the U.S.-Mexico border were detaining, deporting or releasing
 individuals and groups of migrants of different nationalities. 
 
 Data entrusted to staff and volunteers at Alitas illustrate these sudden ups and 
-downs in asylum seeker releases by CBP and ICE. However, data cannot capture the intensity of the reality on the ground; neither the precarity of those facing the 
-long, uncertain asylum case process, nor the challenges of effectively coordinating hundreds of volunteers who work to offer them assistance. Along with a small but 
-growing staff, an army of volunteers make food, shelter, COVID-19 screening and vaccines, emergency medical aid, travel assistance and information services available 
-to all guests. They find innovative ways to accommodate the wide range of needs of a constantly changing flow of arrivals. 
+downs in asylum seeker releases by CBP and ICE. However, data cannot capture the 
+intensity of the reality on the ground; neither the precarity of those facing the 
+long, uncertain asylum case process, nor the challenges of effectively coordinating 
+hundreds of volunteers who work to offer them assistance. Along with a small but 
+growing staff, an army of volunteers make food, shelter, COVID-19 screening and 
+vaccines, emergency medical aid, travel assistance and information services available 
+to all guests. They find innovative ways to accommodate the wide range of needs of 
+a constantly changing flow of arrivals. 
 
 ```{r data, echo = FALSE}
 
@@ -59,6 +63,7 @@ key_policy_events <- policy_events %>%
 ```
 
 ## Timelines
+
 ### Individuals
 
 ```{r arriv7day, echo=FALSE}
@@ -86,7 +91,7 @@ ggplot(aes(x = arrival_date,
        y = "Number of Daily Arrivals")
 ```
 
-The bar plot above shows daily arrivals at Casa Alitas from their re-opening in late January of 2021 through January of 2022, when arrivals peaked on New Years Day at 326 people. The purple line is a rolling 7-day mean. 
+The bar plot above shows daily arrivals at Casa Alitas from their re-opening in late January of 2021 through January of 2022, when arrivals peaked on New Years Day at 326 people. The purple line represent the rolling 7-day mean of daily arrivals. 
 
 ```{r arrivmon, echo=FALSE}
 # Monthly arrivals boxplot
@@ -160,7 +165,7 @@ groups %>%
              aes(xintercept = date, 
                  color = category),
              na.rm = TRUE,
-             size =.75) +
+             size = 1) +
   theme(axis.text.x = element_text(hjust = -.3),
         legend.position = "top", 
         legend.justification = 0) +
@@ -185,11 +190,15 @@ Different policies affect individuals and groups of asylum seekers differently.
 ```{r stayperc, echo=FALSE}
 # plot stay length percentages
 stay_len_perc %>%
+  mutate(bump = case_when(stay_length == 6 ~ paste(round(percent, 1), "%"),
+                          stay_length == 11 ~ paste(round(percent, 1), "%"),
+                          stay_length == 16 ~ paste(round(percent, 1), "%"))) %>%
   ggplot(aes(x = stay_length, 
              y = percent)) +
-  geom_vline(xintercept = 6, size = .5, color = "grey") +
-  geom_vline(xintercept = 11, size = .5, color = "grey") +
-  geom_hline(yintercept=2.5, size = .5, color = "grey") +
+  geom_vline(xintercept = 6, size = .5, color = "darkgrey") +
+  geom_vline(xintercept = 11, size = .5, color = "darkgrey") +
+  geom_vline(xintercept = 16, size = .5, color = "darkgrey") +
+  geom_hline(yintercept=2.5, size = .5, color = "darkgrey") +
   geom_line(color = "orange", na.rm = TRUE) +
   geom_area(fill = "lavender")+
   geom_point(color = "purple", group = 1, na.rm = TRUE) +
@@ -197,10 +206,15 @@ stay_len_perc %>%
                    fill = "orange",
                    nudge_y = 30,
                    na.rm = TRUE) + 
+  geom_label(aes(label = bump),
+            nudge_y = 3,
+            nudge_x = .5,
+            fill = "lavender") +
   labs(x = "Stay Length in Days", 
        y = "Percent of Arrivals") +
   scale_x_continuous(breaks = seq(0, 33, 2), 
                      limits = c(0,33)) +
+  scale_y_continuous(labels = percent_format(scale = 1)) +
   theme(panel.grid.minor.y = element_blank(),
         panel.grid.major.x = element_blank())
 ```
@@ -234,6 +248,9 @@ to continue on their journey. A very small bump on day sixteen likely represents
 ```{r gpstayjit, echo=FALSE}
 # Look at distribution of group sizes for stays from 0-30 days
 groups %>% 
+  mutate(labels = case_when(stay_length == 6 ~ sum(groups$number_in_party[groups$stay_length == 6]),
+                            stay_length == 11 ~ sum(groups$number_in_party[groups$stay_length == 11]),
+                            stay_length == 16 ~ sum(groups$number_in_party[groups$stay_length == 16]))) %>%
   ggplot(aes(x = stay_length, 
              y = number_in_party)) +
   geom_vline(xintercept = 6, size = .5, color = "grey") +
@@ -245,6 +262,10 @@ groups %>%
   geom_jitter(aes(size = number_in_party), 
               show.legend = FALSE, 
               alpha = .2, na.rm = TRUE) +
+  geom_label(aes(label = labels), 
+            y = 6,
+            nudge_y = .5,
+            fill = "lavender") +
   xlim(-1, 25) +   # align x-axis
   labs(y = "Group Size", 
        x = "Stay Length in Days")
@@ -253,11 +274,12 @@ groups %>%
 Individuals with extended stays likely due to COVID-19 most commonly left after 
 six days. It was more common for family groups, generally quarantining together 
 in a hotel room where it was easy to infect those who had previously tested 
-negative, which inevitably prolonged the quarantine. 
+negative, prolonging quarantine. 
 
 ```{r staybp, echo=FALSE}
 # box plots of stay lengths for various group sizes
 groups  %>% 
+  mutate(labels = ifelse(stay_length >30, paste(stay_length, "Days"), NA)) %>%
   ggplot(aes(x = stay_length, 
              y = factor(number_in_party))) +
   geom_violin(aes(group = number_in_party), 
@@ -265,15 +287,17 @@ groups  %>%
   geom_boxplot(varwidth = TRUE, 
                outlier.color = "red",
                fill = "lavender") + # zoom out to see a few distant outliers
+  geom_text(aes(label = labels),
+            nudge_y = .5) +
   labs(x = "Stay Length in Days",
        y = "Group Size")
 ```
 
-Most guests, regardless of party size, move on within a day or two or arrival. Individuals usually tend to move on a bit more quickly than groups, but some have extended stays due to extenuating circumstances such as issues with health, sponsors, court dates or paperwork. . . .
+Most guests, regardless of party size, move on within a day or two or arrival. Still, many guests ended up staying longer due to a variety of reasons. Individuals usually tended to move on a bit more quickly than groups, but some had extended stays due to extenuating circumstances such as issues with health, sponsors, court dates or paperwork.
 
 
 
-## Further Information
+## To Learn More
 
 - **American Immigration Council**: https://www.americanimmigrationcouncil.org/research/guide-title-42-expulsions-border
 - **Arizona Public Media Video Feature**: https://www.youtube.com/watch?v=6FUyY0_exoo

@@ -1,7 +1,7 @@
 ---
 title: "CAWC Origins, Languages & Destinations Report"
 author: "Kendra Lyons"
-date: "3/11/2022"
+date: "5/6/2022"
 output: 
   html_document:
     toc: true
@@ -26,7 +26,8 @@ individuals <- read_csv("data/individual_all_clean_1_20_22.csv", na = c("", "NA"
   rename("GroupID" = ...1) %>%
   select(arrival_date, GroupID, language, country, state_name, state_abb)
 
-countries <- drop_na(read_csv("data/country_counts_1.20.csv"))
+countries <- drop_na(read_csv("data/country_counts_1.20.csv")) %>%
+    filter(country != "United States")
 
 languages <- drop_na(read_csv("data/language_counts_1.20.csv"))
 
@@ -48,7 +49,7 @@ map_destinations <- centroids %>%
   left_join(destinations)
 
 # get immigration policy event data 
-policy_events <- read_csv("data/migration_policy_events_timeline_2021_selected.csv", skip = 2) %>%
+policy_events <- read_csv("data/selected_policy_events_2021.csv", skip = 2) %>%
   mutate(date = parse_date(date, format = "%m/%d/%Y"),
          category = category)
 
@@ -83,6 +84,15 @@ individuals %>%
   
 ```
 
+The language most commonly spoken by guests at Casa Alitas was Spanish, spoken by nearly 71% of arrivals in 2021. Brazilian Portuguese was the next most common, spoken by just under 20% of guests. Haitian Creole was spoken by around four percent, and Quichua was spoken by one percent of guests. Hindi and Romanian were the only other languages spoken by more than 100 arrivals, but smaller numbers of guests spoke many other languages including a wide variety of indigenous languages. See Table 1 for a complete list.
+
+```{r, lang_table, echo=FALSE}
+
+languages %>%
+  kable(caption = "Table 1: Number and Percentage of CAWC Arrivals by Language Spoken")
+
+```
+
 ## Countries of Origin
 
 ```{r orig_fw, echo=FALSE}
@@ -103,9 +113,21 @@ individuals %>%
                expand = c(.02,-.02))
 ```
 
+Venezuelans represented the largest percentage of 2021 arrivals at nearly 23%, followed by Brazilians at around 20%. Cubans made up almost 14%, Ecuadorians nearly 12%, Mexicans and Nicaraguans around 7%, and Haitians less than 5%. Colombians, Guatemalans, Peruvians, Hondurans and Indians each made up between one and three percent of arrivals. For a complete list of origin countries, see Table 2.
+
+
+```{r, country_table, echo=FALSE}
+countries %>% 
+  kable(caption = "Table 2: Number and Percentage of CAWC Arrivals by Origin Country")
+```
+
+### Policy Effects
+
+Policy changes played an key role in determining which migrants were allowed to enter the country at different points in time throughout the year. Three policies had especially obvious impacts. One is the **Migrant Protection Protocols** (MPP), also known as "Remain in Mexico", which forces migrants to await U.S. immigration trials in Mexico, often under exceedingly dangerous conditions. Another important policy is **Title 42** is used to expel migrants, including many asylum-seekers, upon their arrival at the border without the opportunity to request asylum. Migrants from certain countries were eligible for **Temporary Protected Status** due to war, natural disasters or other extreme circumstances in their home countries. Countries eligible for TPS in 2021 include Venezuela, Honduras, Nicaragua, Haiti, El Salvador and Nepal.
+
 ```{r orig_policy, echo=FALSE}
 # get countries with arrivals greater than 100
-some_ctrys <- countries$country[countries$n > 100]
+some_ctrys <- countries$country[countries$n > 5]
 # Arrivals by country over time dot plot
 individuals %>%
   filter(country %in% some_ctrys) %>%
@@ -115,7 +137,7 @@ individuals %>%
              aes(xintercept = date, 
                  color = category),
              na.rm = TRUE,
-             size = .75) +
+             size = 1) +
   geom_point(alpha=.2) +
   theme(legend.position = "top", 
         legend.justification = 0) +
@@ -126,15 +148,20 @@ individuals %>%
        color = element_blank()) +
   scale_x_date(date_breaks = "1 month", 
                date_labels = "%b",
-               expand = c(.02,-.02)) 
+               expand = c(.02,-.02))
+```
 
+```{r policy_table, echo=FALSE}
 # print table with policy change details
 key_policy_events %>%
-  kable(caption = "Immigration Policy Changes in 2021 (Source: Investigative Reporting Workshop)")
+  kable(caption = "Table 3: Immigration Policy Changes in 2021 (Source: Investigative Reporting Workshop)")
 
 ```
 
-## Destination States
+
+###  Origins by Destination States
+
+There were some strong relationships between certain origin countries and destination states. The most common destination for Venezuelans, Cubans and Nicaraguans was Florida, followed by Texas.  Haitians also  primarily went to Florida, but were more likely to go to New York or New Jersey than to Texas. Some Brazilians went to Florida, but they were much more likely to travel to the East coast, especially to Massachusetts, but also to Pennsylvania, New Jersey and, to a lesser extent, Connecticut. Ecuadorians and Peruvians were also usually destined the East coast, mainly New York and New Jersey. Mexicans most commonly went to California, followed by Texas. Colombians were about equally likely to go to New York, Florida or California. Guatemalans and Indians both commonly went to California, and Hondurans were most likely to go to Texas. 
 
 ```{r destorig, echo=FALSE}
 # get top destination states
@@ -143,9 +170,9 @@ top_states <- destinations$state[1:12]
 individuals %>%
   filter(country %in% top_ctrys,
          state_name %in% top_states) %>%
-ggplot(aes(y = factor(country, rev(top_ctrys)), 
-           fill = state_abb)) +
-  geom_bar(position = "fill") + # normalize bar height
+ggplot(aes(y = factor(country, rev(top_ctrys)),
+           fill = factor(state_abb, levels = rev(destinations$state_abbs[1:12])))) +
+  geom_bar(position = "fill", na.rm = TRUE) + # normalize bar height
   theme(axis.text.x=element_blank(),
         legend.text = element_text(size=10),
         legend.position = "top",
@@ -161,11 +188,16 @@ ggplot(aes(y = factor(country, rev(top_ctrys)),
 
 ```
 
+## Destination States
+
+By far, the most popular destination of Casa Alitas guests was Florida, with about 27% travelling there. Massachusetts and New York were the next most popular, with 9.7% and 9.4%, respectively. Texas had 8.5%, New Jersey 6.3% and California 5.7%. Three percent of guests went to Pennsylvania, 2.6% to Georgia, and 2.3% to both Connecticut and Illinois. No other states received more than 2% of arrivals, and only three states had zero arrivals (Hawaii, North Dakota and Wyoming). See Table 4 for a list of numbers and percentages of destinations for all 2021 arrivals 
+
 ```{r destmap, echo=FALSE}
 # plot data on U.S. map with descriptive labels
 plot_usmap(data = destinations, 
            values = "n") +
-  theme(legend.position = "right") +
+  theme(legend.position = "right", 
+        title = element_text(size = 14)) +
   scale_fill_continuous(name = "Guests",
                         low = "white", 
                         high = "darkgreen") +
@@ -175,9 +207,10 @@ plot_usmap(data = destinations,
                        y = y,
                        label = paste(abbr, comma(n, accuracy=1))),
             size = 3) +
-  labs(title = "Destinations of Casa Alitas guests")
+  labs(title = "Destinations of Casa Alitas guests") # MAKE LARGER!
 
 ```
+
 
 ```{r desttl, echo=FALSE}
 # vector with top (12) destination states
@@ -196,8 +229,13 @@ individuals %>%
                expand = c(.02,-.02))
 ```
 
+```{r, destTable, echo=FALSE}
+destinations %>%
+  kable(caption = "Table 4: Number and Percentage of CAWC Arrivals by Destination State")
+```
 
-### Further Resources
+
+## To Learn More
 
 
 

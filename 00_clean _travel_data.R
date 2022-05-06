@@ -12,8 +12,8 @@ library(tidyverse)
 library(lubridate)
 
 ## Read in Data
-df <- read_csv("data/individual_all_clean_1_20_22.csv")%>%
-  rename("group_id" = ...1)# Rename first column (index)
+df <- read_csv("data/travel_less_raw_limited_1.20.csv") #%>%
+  #rename("group_id" = ...1)# Rename first column (index)
 
 
 ## CLEAN DATES
@@ -143,8 +143,7 @@ df <- df %>%
                              state_name, NA))
 
 # make dataframe with state names and abbs (matching state_abb column)
-state_info_1 <- data.frame(state_names = state.name,
-                         state_abb = state.abb)
+state_info_1 <- data.frame(state_names = state.name) #,state_abb = state.abb
 
 # left join, adding state_names column with missing values from abbs
 df <- df %>%
@@ -152,7 +151,7 @@ df <- df %>%
 
 # make new data frame with state names and abbs (matching state_name column)
 state_info_2 <- data.frame(state_name = state.name,
-                         state_abbs = state.abb)
+                         state_abbs = state.abb) ## this might be why I don't ahve all abbs
 
 # left join, adding state_abbs column with missing values from names
 df <- df %>%
@@ -176,7 +175,7 @@ df <- df %>%
 unique(df$state_name)
 
 dst.cts <- df %>%
-  count(state_name)
+  count(state_name, state_abbs)
 dst.cts$percent <- round((dst.cts$n/sum(dst.cts$n))*100, 2)
 dst.cts <- arrange(dst.cts, -n)
 
