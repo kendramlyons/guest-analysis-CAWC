@@ -1,17 +1,18 @@
 ---
-title: "CAWC Origins, Languages & Destinations Report"
+title: "Casa Alitas Origins, Languages & Destinations Report"
 author: "Kendra Lyons"
 date: "5/6/2022"
 output: 
-  html_document:
+  pdf_document:
     toc: true
 ---
 
 ```{r setup, include=FALSE}
 library(ggrepel)
+library(ggthemes)
 library(knitr)
-library(tidyverse)
 library(scales)
+library(tidyverse)
 library(usmap)
 opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
@@ -19,6 +20,8 @@ opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ## Data Dates: 1/26/21 to 1/20/22
 
 Data for this project were collected by volunteers and staff at Casa Alitas Welcome Center in Tucson, Arizona. 
+
+During the dates these data were collected, approximately 24,000 individuals from at least 37 different countries passed through the Welcome Center. They spoke at least 41 different Languages, and after being dropped off in Tucson or nearby towns by border authorities, they continued on to 47 states and the District of Columbia. 
 
 ```{r data, include = FALSE}
 
@@ -65,11 +68,14 @@ key_policy_events <- policy_events %>%
 
 ```
 
+
 ## Languages
+
 
 ```{r languages, echo=FALSE}
 # set plot theme
 theme_set(theme_minimal(14))
+
 
 # plot arrivals of other language speakers over time
 some_langs = languages$language[languages$n > 4]
@@ -78,20 +84,23 @@ individuals %>%
   filter(language %in% some_langs) %>%
   ggplot(aes(x = arrival_date, 
              y = factor(language, rev(some_langs)))) +
-  geom_point(aes(color = factor(language, rev(some_langs))), 
+  geom_point(#aes(color = factor(language, rev(some_langs))), 
              alpha = .2,
              show.legend = FALSE) +
-  scale_color_viridis_d(option = "plasma") +
-  labs(title = "Arrivals over time by language spoken",
-       x = element_blank(), 
-       y = element_blank()) +
+  #scale_color_viridis_d(option = "viridis", begin = 0, end = 1) +
+  #scale_color_viridis_d(option = "plasma") +
+  theme(plot.background = element_rect(fill = "#f4eee0")) +
   scale_x_date(date_breaks = "1 month", 
                date_labels = "%b",
-               expand = c(.02,-.02)) 
+               expand = c(.02,-.02)) +
+  labs(title = "Arrivals over time by language spoken",
+       x = element_blank(), 
+       y = element_blank())
   
 ```
 
 The language most commonly spoken by guests at Casa Alitas was Spanish, spoken by nearly 71% of arrivals in 2021. Brazilian Portuguese was the next most common, spoken by just under 20% of guests. Haitian Creole was spoken by around four percent, and Quichua was spoken by one percent of guests. Hindi and Romanian were the only other languages spoken by more than 100 arrivals, but smaller numbers of guests spoke many other languages including a wide variety of indigenous languages. See Table 1 for a complete list.
+
 
 ```{r, lang_table, echo=FALSE}
 
@@ -99,6 +108,7 @@ languages %>%
   kable(caption = "Table 1: Number and Percentage of CAWC Arrivals by Language Spoken")
 
 ```
+
 
 ## Countries of Origin
 
@@ -108,16 +118,20 @@ top_ctrys <-  countries$country[0:12]
 # Top 12 countries of origin FW 
 individuals %>%
   filter(country %in% top_ctrys) %>%
-  ggplot(aes(x = arrival_date)) +
-  geom_bar(show.legend = FALSE) +
-  labs(title = "Daily arrivals over time, top origin countries", 
-       x = element_blank(), 
-       y = "Number of Individuals") + 
+  ggplot(aes(x = arrival_date,
+             #color = factor(country, rev(top_ctrys))
+             ), fill = "black") +
+  geom_bar(show.legend = FALSE) + 
   facet_wrap(~factor(country, top_ctrys), 
              scales = "free_y")  +
+  #scale_color_viridis_d(option = "viridis", begin = 1, end = 0) +
+  theme(plot.background = element_rect(fill = "#f4eee0")) +
   scale_x_date(date_breaks = "3 month", 
                date_labels = "%b",
-               expand = c(.02,-.02))
+               expand = c(.02,-.02)) +
+  labs(title = "Daily arrivals over time, top origin countries", 
+       x = element_blank(), 
+       y = "Number of Individuals") 
 ```
 
 Venezuelans represented the largest percentage of 2021 arrivals at 22.7%, followed by Brazilians at around 20%. Cubans made up almost 14%, Ecuadorians nearly 12%, Mexicans and Nicaraguans around 7%, and Haitians less than 5%. Colombians, Guatemalans, Peruvians, Hondurans and Indians each made up between one and three percent of arrivals. For a complete list of origin countries, see Table 2.
@@ -125,6 +139,7 @@ Venezuelans represented the largest percentage of 2021 arrivals at 22.7%, follow
 
 ```{r, country_table, echo=FALSE}
 countries %>% 
+  filter(n > 1) %>%
   kable(caption = "Table 2: Number and Percentage of CAWC Arrivals by Origin Country")
 ```
 
@@ -142,18 +157,22 @@ individuals %>%
              y = factor(country, rev(countries$country[1:23])))) +
   geom_vline(data = key_policy_events, 
              aes(xintercept = date, 
-                 color = category),
+                 color = category,
+                 linetype = category),
              na.rm = TRUE,
              size = 1) +
-  scale_color_manual(values = c("purple", "orange", "darkgreen")) +
+  #scale_color_manual(values = c("purple", "goldenrod", "darkgreen")) +
+  scale_color_manual(values = c( "darkred", "gray40", "black")) + 
   geom_point(alpha = .2,
              show.legend = FALSE) +
   theme(legend.position = "top", 
-        legend.justification = 0) +
+        legend.justification = 0,
+        plot.background = element_rect(fill = "#f4eee0")) +
   labs(title = "Policy change effects by origin country",
        x = element_blank(), 
        y = element_blank(),
-       color = element_blank()) +
+       color = element_blank(),
+       linetype = element_blank()) +
   scale_x_date(date_breaks = "1 month", 
                date_labels = "%b",
                expand = c(.02,-.02))
@@ -174,6 +193,7 @@ There were some strong relationships between certain origin countries and destin
 ```{r destorig, echo=FALSE}
 # get top destination states
 top_states <- destinations$state[1:12]
+
 # plot comparison of top origin countries and destination states
 individuals %>%
   filter(country %in% top_ctrys,
@@ -185,17 +205,16 @@ ggplot(aes(y = factor(country, rev(top_ctrys)),
         legend.text = element_text(size=10),
         legend.position = "top",
         legend.justification = 0,
-        legend.spacing.x = unit(.5, 'cm')) +
-  labs(title = "Popular destination states by origin country", 
+        legend.spacing.x = unit(.5, 'cm'),
+        plot.background = element_rect(fill = "#f4eee0")) +
+    guides(fill = guide_legend(nrow = 1, reverse = TRUE, 
+                             label.position = "top")) +
+  scale_fill_grey(start = 1, end = 0) +
+  #scale_fill_viridis_d(option = "plasma") +
+  labs(title = "Top destination states by origin country", 
        y = element_blank(), 
        x = element_blank(), 
-       fill = element_blank()) +
-  guides(fill = guide_legend(nrow = 1, reverse = TRUE, 
-                             label.position = "top")) +
-  #scale_fill_brewer(palette = "Set3")
-  #scale_fill_calc()
-  #scale_fill_stata()
-  scale_fill_viridis_d(option = "plasma")
+       fill = element_blank())
 
 ```
 
@@ -209,7 +228,14 @@ plot_usmap(data = destinations,
            values = "n") +
   theme(legend.position = "right", 
         title = element_text(size = 14)) +
+<<<<<<< HEAD
+  theme(plot.background = element_rect(fill = "#f4eee0", color = "#f4eee0"),
+        legend.background = element_rect(fill = "#f4eee0")) +
+  #scale_fill_viridis_c(option = "viridis", begin = 1, end = 0) +
+  scale_fill_gradient(low="#f4eee0", high='grey10') +
+=======
   scale_fill_viridis_c(option = "plasma") +
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
   geom_label_repel(data = map_destinations %>% filter(n != 2), 
                    max.overlaps = 21,
                    fontface = "bold",
@@ -217,12 +243,11 @@ plot_usmap(data = destinations,
                    aes(x = x,
                        y = y,
                        label = paste(abbr, comma(n, accuracy=1)))) +
-  labs(title = "Destinations of Casa Alitas guests",
+  labs(title = "Destination states of Casa Alitas guests",
        fill = "People") # MAKE LARGER!
-
-# scale_fill_continuous(name = "Guests",
-#                         low = "white", 
-#                         high = "darkgreen") +
+  # scale_fill_continuous(name = "Guests",
+  #                        low = "white",
+  #                        high = "darkgreen")
 
 ```
 
@@ -237,10 +262,15 @@ individuals %>%
   filter(state_name %in% popular_dests) %>%
   ggplot(aes(x = arrival_date, 
              y = factor(state_name, rev(popular_dests)))) +
-  geom_point(aes(color = factor(state_name, rev(popular_dests))), 
+  geom_point(#aes(color = factor(state_name, rev(popular_dests))), 
              alpha = .2, na.rm = TRUE,
              show.legend = FALSE) +
+<<<<<<< HEAD
+  #scale_color_viridis_d(option = "plasma") +
+  theme(plot.background = element_rect(fill = "#f4eee0")) +
+=======
   scale_color_viridis_d(option = "plasma") +
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
   scale_x_date(date_breaks = "1 month", 
                date_labels = "%b",
                expand = c(.02,-.02)) +
@@ -253,7 +283,7 @@ At least one guest traveled to every single state except Hawaii, North Dakota an
 
 ```{r, destTable, echo=FALSE}
 destinations %>%
-  #filter(n > 0) %>%
+  filter(n > 0) %>%
   kable(caption = "Table 4: Number and Percentage of CAWC Arrivals by Destination State")
 ```
 

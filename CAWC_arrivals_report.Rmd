@@ -1,9 +1,9 @@
 ---
-title: "CAWC Arrivals Report"
+title: "Casa Alitas Welcome Center Arrivals Report"
 author: "Kendra Lyons"
 date: "5/6/2022"
 output: 
-  html_document:
+  pdf_document:
     toc: true
 ---
 
@@ -63,7 +63,7 @@ key_policy_events <- policy_events %>%
 
 ## Timelines
 
-### Individuals
+### By Individual
 
 ```{r arriv7day, echo=FALSE}
 # set plot theme
@@ -81,7 +81,8 @@ ggplot(aes(x = arrival_date,
                    nudge_y = 225,
                    na.rm = TRUE,
                    fill = "lavender") +
-  theme(axis.text.x = element_text(hjust = -.2)) +
+  theme(axis.text.x = element_text(hjust = -.2),
+        plot.background = element_rect(fill = "#f4eee0")) +
   scale_x_date(date_breaks = "1 month", 
                date_labels = "%b",
                expand = c(.02,-.02)) + 
@@ -99,7 +100,7 @@ arrivals_7_day %>% #weekly arrivals by month boxplots
   ggplot(aes(x = arrival_date, 
              y = n)) +
   geom_col(fill = "lightgrey", 
-           color="white") +
+           color = "#f4eee0") +
   geom_hline(yintercept = 100, 
              color = "purple",
              size =.8 ) +
@@ -111,7 +112,8 @@ arrivals_7_day %>% #weekly arrivals by month boxplots
   scale_x_date(date_breaks="1 month", 
                date_labels="%b",
                expand = c(.02,-.02)) +
-  theme(axis.text.x = element_text(hjust = -.2)) +
+  theme(axis.text.x = element_text(hjust = -.2),
+        plot.background = element_rect(fill = "#f4eee0")) +
   labs(title = "Change in daily arrivals by month", 
        x = element_blank(), 
        y = "Number of Daily Arrivals",
@@ -135,6 +137,7 @@ arrivals_wkly %>%
              fill = "lavender",
              nudge_y = 50,
              na.rm = TRUE) +
+  theme(plot.background = element_rect(fill = "#f4eee0")) +
   scale_x_continuous(breaks = seq(3, max(arrivals_wkly$week_number), 4.3),
                      labels=c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec", "Jan")) +
   labs(title = "Change in weekly arrivals over time",
@@ -146,9 +149,13 @@ arrivals_wkly %>%
 
 The increasing trend in arrivals is even more evident in the plot above, which displays total weekly arrival numbers with a linear regression line (purple) and confidence interval (shaded). So are the abrupt and unusual drops in arrivals late 
 in the year. In October and December of 2021, there were several weeks with sudden and significant drops or spikes in arrivals that were _far_ outside of the predictable range of usual variation. However, knowledge of potential forthcoming policy changes gleaned through networks of migrant-serving organizations and direct communication with border authorities and local government officials sometimes allowed staff to prepare for large decreases or increases in arrivals. 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
 
-### Groups
+### By Group Size
+
 
 
 ```{r grouptl, echo=FALSE}
@@ -167,7 +174,8 @@ groups %>%
              size = 1.25) +
   theme(axis.text.x = element_text(hjust = -.3),
         legend.position = "top", 
-        legend.justification = 0) +
+        legend.justification = 0,
+        plot.background = element_rect(fill = "#f4eee0")) +
   scale_color_manual(values = c("purple", "orange", "darkgreen")) +
   scale_x_date(date_breaks="1 month", 
                date_labels="%b",
@@ -184,9 +192,14 @@ groups %>%
 ```
 
 Throughout 2021, ups and downs in immigration policy shifts affected how individuals and groups of asylum seekers were released from detention. There were some periods of time with mostly family arrivals, such as December of 2021, and others with more individual arrivals, like month earlier in November. 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
 
-## Stay Length & Group Size
+## Stay Length
+
+### By Individual
 
 ```{r stayperc, echo=FALSE}
 # plot stay length percentages
@@ -196,12 +209,12 @@ stay_len_perc %>%
                           stay_length == 16 ~ paste(round(percent, 1), "%"))) %>%
   ggplot(aes(x = stay_length, 
              y = percent)) +
-  geom_vline(xintercept = 6, size = .5, color = "darkgrey") +
-  geom_vline(xintercept = 11, size = .5, color = "darkgrey") +
-  geom_vline(xintercept = 16, size = .5, color = "darkgrey") +
-  geom_hline(yintercept=2.5, size = .5, color = "darkgrey") +
+  geom_vline(xintercept = 6, size = .5, color = "grey") +
+  geom_vline(xintercept = 11, size = .5, color = "grey") +
+  geom_vline(xintercept = 16, size = .5, color = "grey") +
+  geom_hline(yintercept= 2, size = .5, color = "orange") +
   geom_line(color = "orange", na.rm = TRUE) +
-  geom_area(fill = "lavender")+
+  geom_area(fill = "lavender", alpha = .8)+
   geom_point(color = "purple", group = 1, na.rm = TRUE) +
   geom_label_repel(aes(label = label), 
                    fill = "orange",
@@ -214,9 +227,14 @@ stay_len_perc %>%
   scale_x_continuous(breaks = seq(0, 33, 2), 
                      limits = c(0,33)) +
   scale_y_continuous(labels = percent_format(scale = 1)) +
+<<<<<<< HEAD
+  theme(plot.background = element_rect(fill = "#f4eee0")) +
+  labs(title = "Guests with COVID-19 quarantined until testing negative",
+=======
   theme(panel.grid.minor.y = element_blank(),
         panel.grid.major.x = element_blank()) +
   labs(title = "Those with COVID-19 quarantined until testing negative",
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
        x = "Stay Length in Days", 
        y = "Percent of Arrivals",
        caption = "Source: Casa Alitas Program, 2021")
@@ -224,11 +242,16 @@ stay_len_perc %>%
 
 Around a 23% of people departed the same day they arrived and 70% of guests moved on after one night or less. After two nights or less, 85% of guests had moved on, and slightly more than 90% moved on after three nights or less. Only about 6% of all arrivals stayed longer than 5 days.
 
+<<<<<<< HEAD
+Small peaks in stay lengths formed on days six and eleven, probably when an individual or all members of a group had re-tested negative for COVID-19 so were able to continue on their journey. These two peaks together represent less than 4% of all guests. A very small bump on day sixteen may represents those groups who stayed in quarantine for 15 days, most likely re-testing three times before being able to travel on to their destinations.   
+=======
 Small peaks in stay lengths formed on days six and eleven, most likely when an individual or all members of a group had re-tested negative for COVID-19 so were able to continue on their journey. These two peaks together represent less than 4% of guests. A very small bump on day sixteen likely represents those groups who stayed in quarantine for 15 days, most likely re-testing three times before being able to travel on to their destinations.   
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
 
 ```{r staydist, echo=FALSE}
 # plot stay length counts
 stay_len_perc %>% #filter out mistakes in recording year (negative values)
+  filter(percent > .03) %>%
   ggplot(aes(x = stay_length, y = n)) +
   geom_vline(xintercept = 6, size = .5, color = "grey") +
   geom_vline(xintercept = 11, size = .5, color = "grey") +
@@ -241,13 +264,35 @@ stay_len_perc %>% #filter out mistakes in recording year (negative values)
              na.rm = TRUE) +
   scale_x_continuous(breaks = seq(0, 20, 5), 
                      limits = c(-1, 20)) +
+<<<<<<< HEAD
+  theme(plot.background = element_rect(fill = "#f4eee0")) +
+  labs(title = "Ninety-four percent of arrivals stayed fewer than 5 days",
+       x = "Stay Length in Days", 
+       y = "Number of Individuals",
+       caption = "Source: Casa Alitas Program, 2021")
+
+
+#long_stays <- stay_len_perc %>%
+   #filter(stay_length> 5)
+
+#sum(long_stays$n)
+
+#sum(long_stays$percent)
+=======
   labs(title = "",
        x = "Stay Length in Days", 
        y = "Number of Individuals",
        caption = "Source: Casa Alitas Program, 2021")
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
 ```
 All-in-all, from January 26, 2021 until January 20, 2022, the Casa Alitas Program coordinated more than 40,000 beds (migrants X stay length), which averages to more than 100 people staying with Alitas per night. This was only possible through collaboration with Pima County, who contracted out several Tucson motels and hotels with funding from FEMA.  
 
+<<<<<<< HEAD
+Of 23,660 arrivals, 1,498 had stays longer than 5 days. All-in-all, from January 26, 2021 until January 20, 2022, the Casa Alitas Program coordinated more than 40,000 beds (number of migrants by stay length), an average of 113 people staying with Alitas per night. It was only possible through coordination with Pima County and contracts with several Tucson motels and hotels for shelter overflow and quarantine, with substantial funding from FEMA.  
+
+### By Group Size
+=======
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
 
 ```{r gpstayjit, echo=FALSE}
 # Look at distribution of group sizes for stays from 0-30 days
@@ -266,12 +311,19 @@ groups %>%
   geom_jitter(aes(size = number_in_party), 
               show.legend = FALSE, 
               alpha = .2, na.rm = TRUE) +
+  theme(plot.background = element_rect(fill = "#f4eee0")) +
   geom_label(aes(label = labels), 
             y = 6,
             nudge_y = .5,
-            fill = "lavender") +
+            fill = "lavender",
+            na.rm = TRUE) +
   xlim(-1, 25) +   # align x-axis
+<<<<<<< HEAD
+  labs(title = "Families stayed in quarantine longer than individuals",
+       y = "Group Size", 
+=======
   labs(y = "Group Size", 
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
        x = "Stay Length in Days",
        caption = "Source: Casa Alitas Program, 2021")
 ```
@@ -290,14 +342,24 @@ groups  %>%
                outlier.color = "red",
                fill = "lavender") + # zoom out to see a few distant outliers
   geom_text(aes(label = labels),
+<<<<<<< HEAD
+            nudge_y = .5, na.rm = TRUE) +
+  theme(plot.background = element_rect(fill = "#f4eee0")) +
+  labs(title = "Several guests stayed longer than one month",
+=======
             nudge_y = .5) +
   labs("A few guests stayed longer than a month",
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
        x = "Stay Length in Days",
        y = "Group Size",
        caption = "Source: Casa Alitas Program, 2021")
 ```
 
+<<<<<<< HEAD
+Most guests, regardless of party size, moved on within a day or two of arrival. Close to 15% of guests ended up staying longer. In general, individuals tended to move on more quickly than groups, but some had extended stays due to extenuating circumstances like issues with health, sponsors, court dates or paperwork.
+=======
 Most guests, regardless of party size, moved on within a day or two of arrival. Close to 15% of guests ended up staying longer due to a variety of reasons. In general, individuals tended to move on more quickly than groups, but some had extended stays due to extenuating circumstances such as issues with their health, sponsors, court dates or paperwork.
+>>>>>>> 2a0cbc40c0ad6dddf8d276b980e9caf5f2780c60
 
 
 ## To Learn More
