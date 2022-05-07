@@ -74,7 +74,10 @@ individuals %>%
   filter(language %in% some_langs) %>%
   ggplot(aes(x = arrival_date, 
              y = factor(language, rev(some_langs)))) +
-  geom_point(alpha = .2) +
+  geom_point(aes(color = factor(language, rev(some_langs))), 
+             alpha = .2,
+             show.legend = FALSE) +
+  scale_color_viridis_d(option = "plasma") +
   labs(title = "Arrivals over time by language spoken",
        x = element_blank(), 
        y = element_blank()) +
@@ -113,7 +116,7 @@ individuals %>%
                expand = c(.02,-.02))
 ```
 
-Venezuelans represented the largest percentage of 2021 arrivals at nearly 23%, followed by Brazilians at around 20%. Cubans made up almost 14%, Ecuadorians nearly 12%, Mexicans and Nicaraguans around 7%, and Haitians less than 5%. Colombians, Guatemalans, Peruvians, Hondurans and Indians each made up between one and three percent of arrivals. For a complete list of origin countries, see Table 2.
+Venezuelans represented the largest percentage of 2021 arrivals at 22.7%, followed by Brazilians at around 20%. Cubans made up almost 14%, Ecuadorians nearly 12%, Mexicans and Nicaraguans around 7%, and Haitians less than 5%. Colombians, Guatemalans, Peruvians, Hondurans and Indians each made up between one and three percent of arrivals. For a complete list of origin countries, see Table 2.
 
 
 ```{r, country_table, echo=FALSE}
@@ -138,10 +141,11 @@ individuals %>%
                  color = category),
              na.rm = TRUE,
              size = 1) +
-  geom_point(alpha=.2) +
+  scale_color_manual(values = c("purple", "orange", "darkgreen")) +
+  geom_point(alpha = .2,
+             show.legend = FALSE) +
   theme(legend.position = "top", 
         legend.justification = 0) +
-  scale_color_manual(values = c("purple", "orange", "darkgreen")) +
   labs(title = "Policy change effects by origin country",
        x = element_blank(), 
        y = element_blank(),
@@ -171,7 +175,7 @@ individuals %>%
   filter(country %in% top_ctrys,
          state_name %in% top_states) %>%
 ggplot(aes(y = factor(country, rev(top_ctrys)),
-           fill = factor(state_abb, levels = rev(destinations$state_abbs[1:12])))) +
+           fill = factor(state_abb, levels = rev(destinations$state_abb[1:12])))) +
   geom_bar(position = "fill", na.rm = TRUE) + # normalize bar height
   theme(axis.text.x=element_blank(),
         legend.text = element_text(size=10),
@@ -184,7 +188,10 @@ ggplot(aes(y = factor(country, rev(top_ctrys)),
        fill = element_blank()) +
   guides(fill = guide_legend(nrow = 1, reverse = TRUE, 
                              label.position = "top")) +
-  scale_fill_viridis_d()
+  #scale_fill_brewer(palette = "Set3")
+  #scale_fill_calc()
+  #scale_fill_stata()
+  scale_fill_viridis_d(option = "plasma")
 
 ```
 
@@ -198,18 +205,23 @@ plot_usmap(data = destinations,
            values = "n") +
   theme(legend.position = "right", 
         title = element_text(size = 14)) +
-  scale_fill_continuous(name = "Guests",
-                        low = "white", 
-                        high = "darkgreen") +
-  geom_label_repel(data = map_destinations, 
+  scale_fill_viridis_c(option = "plasma") +
+  geom_label_repel(data = map_destinations %>% filter(state != "District of Colombia"), 
                    max.overlaps = 21,
+                   fontface = "bold",
+                   size = 2.8,
                    aes(x = x,
                        y = y,
-                       label = paste(abbr, comma(n, accuracy=1))),
-            size = 3) +
-  labs(title = "Destinations of Casa Alitas guests") # MAKE LARGER!
+                       label = paste(abbr, comma(n, accuracy=1)))) +
+  labs(title = "Destinations of Casa Alitas guests",
+       fill = "People") # MAKE LARGER!
+
+# scale_fill_continuous(name = "Guests",
+#                         low = "white", 
+#                         high = "darkgreen") +
 
 ```
+
 
 
 ```{r desttl, echo=FALSE}
@@ -220,7 +232,10 @@ individuals %>%
   filter(state_name %in% popular_dests) %>%
   ggplot(aes(x = arrival_date, 
              y = factor(state_name, rev(popular_dests)))) +
-  geom_point(alpha = .2, na.rm = TRUE) +
+  geom_point(aes(color = factor(state_name, rev(popular_dests))), 
+             alpha = .2, na.rm = TRUE,
+             show.legend = FALSE) +
+  scale_color_viridis_d(option = "plasma") +
   labs(title = "Arrivals over time by destination state",
        x = element_blank(), 
        y = element_blank()) +
@@ -229,13 +244,91 @@ individuals %>%
                expand = c(.02,-.02))
 ```
 
+
 ```{r, destTable, echo=FALSE}
 destinations %>%
+  #filter(n > 0) %>%
   kable(caption = "Table 4: Number and Percentage of CAWC Arrivals by Destination State")
 ```
 
-
 ## To Learn More
 
+- **Arizona Public Media Video Feature**: https://www.youtube.com/watch?v=6FUyY0_exoo
 
+- **Casa Alitas Program Website**: https://www.casaalitas.org/
+
+- **Catholic Community Services of Southern Arizona**: https://www.ccs-soaz.org/agencies-ministries/detail/alitas-aid-for-migrant-women-and-children
+
+
+### Asylum
+
+- **Southern Border Communities Coalition**: https://www.southernborder.org/border_lens_asylum_seekers_at_the_border
+
+- **U.S. Citizenship and Immigration Services**: https://www.uscis.gov/humanitarian/refugees-and-asylum/asylum/obtaining-asylum-in-the-united-states
+
+- **Syracuse University**: https://trac.syr.edu/immigration/reports/667/
+
+
+### Migration Policy Changes
+
+- **Boundless**: https://www.boundless.com/blog/biden-immigration-tracker/
+
+- **Center for Migration Studies**: https://cmsny.org/biden-immigration-executive-actions/
+
+- **Immigration Policy Tracking Project**: https://immpolicytracking.org/home/
+
+- **Investigative Reporting Workshop**: https://investigativereportingworkshop.org/news/timeline-bidens-immigration-policy/
+
+- **Lawfare Blog**: https://www.lawfareblog.com/president-bidens-immigration-executive-actions-recap#Asylum
+
+- **Pew Research**: https://www.pewresearch.org/fact-tank/2022/01/11/key-facts-about-u-s-immigration-policies-and-bidens-proposed-changes/
+
+
+### "Remain in Mexico" (MPP)
+
+- **Department of Homeland Security**: https://www.dhs.gov/migrant-protection-protocols
+
+- **Migration Policy Institute**: https://www.migrationpolicy.org/article/court-order-relaunch-remain-in-mexico
+
+- **Reuters**: https://www.reuters.com/world/us/biden-administration-issues-new-memo-ending-trump-remain-mexico-policy-2021-10-29/
+
+
+### Temporary Protected Status
+
+- **Federal Register**: https://www.federalregister.gov/documents/2021/09/10/2021-19617/continuation-of-documentation-for-beneficiaries-of-temporary-protected-status-designations-for-el
+
+- **National Immigration Forum**: https://immigrationforum.org/article/fact-sheet-temporary-protected-status/
+
+- **U.S. Citizenship and Immigration Services**: https://www.uscis.gov/humanitarian/temporary-protected-status
+
+
+### Title 42
+
+- **American Immigration Council**: https://www.americanimmigrationcouncil.org/research/guide-title-42-expulsions-border
+
+- **CBS News**: https://www.cbsnews.com/news/immigration-title-42-senate-bill-border-expulsions/
+
+- **Deseret News**: https://www.deseret.com/2022/4/8/23015106/what-is-title-42-and-why-does-biden-plan-to-end-it-your-questions-answered-us-mexico-border
+
+- **El Paso Matters**: https://elpasomatters.org/2021/10/08/timeline-how-title-42-came-to-be-used-on-asylum-seekers/
+
+- **Puente Arizona**: https://puenteaz.org/title42/
+
+- **Washington Office on Latin America**: https://www.wola.org/analysis/a-tragic-milestone-20000th-migrant-deported-to-haiti-since-biden-inauguration/
+
+
+### News 
+
+- **Boundless**: https://www.boundless.com/blog/boundless-weekly-immigration-news/
+
+- **FEMA Funds for Migrant Aid**: https://tucson.com/news/local/pima-county-uncertain-federal-funds-to-support-asylum-seekers-will-continue/article_1d07a4c8-901d-11ec-8e6c-a37e4491dcf4.html
+
+- **Human Rights Watch**: https://www.hrw.org/news/2021/03/05/mexico-abuses-against-asylum-seekers-us-border
+
+- **International Rescue Committee**: https://www.rescue.org/article/what-happening-us-southern-border
+  - En espanol: https://www.rescue.org/article/que-esta-pasando-en-la-frontera-sur-de-estados-unidos
+
+- **Tucson Sentinel**: https://www.tucsonsentinel.com/local/report/030122_casa_alitas_budget/pima-county-spending-13-million-per-month-shelter-migrants-released-by-dhs/
+
+- **Tucson Weekly**: https://www.tucsonweekly.com/tucson/crowded-house-casa-alitas-faces-increased-pressure-as-more-migrants-seek-refugee-status/Content?oid=30449369
 

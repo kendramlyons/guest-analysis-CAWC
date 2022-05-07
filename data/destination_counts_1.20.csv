@@ -1,49 +1,50 @@
-state_name,state_abbs,n,percent
-Florida,FL,4234,33.82
-Texas,TX,1259,10.06
-New York,NY,936,7.48
-Massachusetts,MA,804,6.42
-New Jersey,NJ,660,5.27
-California,CA,625,4.99
-NA,NA,564,4.5
-Georgia,GA,337,2.69
-Pennsylvania,PA,287,2.29
-Illinois,IL,258,2.06
-Utah,UT,221,1.77
-Connecticut,CT,218,1.74
-Tennessee,TN,180,1.44
-Indiana,IN,175,1.4
-Arizona,AZ,167,1.33
-North Carolina,NC,164,1.31
-South Carolina,SC,124,0.99
-Colorado,CO,118,0.94
-Maryland,MD,112,0.89
-Virginia,VA,100,0.8
-Nevada,NV,96,0.77
-Washington,WA,91,0.73
-Kentucky,KY,89,0.71
-Louisiana,LA,89,0.71
-Ohio,OH,89,0.71
-Minnesota,MN,75,0.6
-Wisconsin,WI,60,0.48
-Alabama,AL,45,0.36
-Oklahoma,OK,44,0.35
-Nebraska,NE,40,0.32
-Oregon,OR,36,0.29
-Michigan,MI,35,0.28
-Kansas,KS,26,0.21
-Missouri,MO,25,0.2
-Iowa,IA,20,0.16
-Delaware,DE,19,0.15
-New Hampshire,NH,17,0.14
-New Mexico,NM,15,0.12
-Idaho,ID,14,0.11
-Rhode Island,RI,12,0.1
-Arkansas,AR,10,0.08
-Mississippi,MS,10,0.08
-South Dakota,SD,8,0.06
-Maine,ME,4,0.03
-Montana,MT,3,0.02
-Vermont,VT,3,0.02
-Alaska,AK,1,0.01
-West Virginia,WV,1,0.01
+state_name,state_abb,n,percent
+Florida,FL,6558,27.14
+Massachusetts,MA,2350,9.73
+New York,NY,2266,9.38
+Texas,TX,2045,8.46
+New Jersey,NJ,1523,6.3
+California,CA,1370,5.67
+Pennsylvania,PA,726,3
+Georgia,GA,624,2.58
+Connecticut,CT,562,2.33
+Illinois,IL,549,2.27
+Utah,UT,387,1.6
+Tennessee,TN,341,1.41
+Arizona,AZ,326,1.35
+North Carolina,NC,315,1.3
+Indiana,IN,313,1.3
+South Carolina,SC,307,1.27
+Maryland,MD,264,1.09
+Washington,WA,210,0.87
+Colorado,CO,207,0.86
+Virginia,VA,202,0.84
+Minnesota,MN,191,0.79
+Louisiana,LA,190,0.79
+Ohio,OH,182,0.75
+Kentucky,KY,150,0.62
+Nevada,NV,148,0.61
+Alabama,AL,122,0.5
+Nebraska,NE,102,0.42
+Wisconsin,WI,102,0.42
+Oklahoma,OK,77,0.32
+Michigan,MI,66,0.27
+Oregon,OR,65,0.27
+New Hampshire,NH,59,0.24
+Kansas,KS,55,0.23
+Missouri,MO,55,0.23
+Iowa,IA,46,0.19
+Delaware,DE,42,0.17
+Idaho,ID,36,0.15
+New Mexico,NM,33,0.14
+Mississippi,MS,28,0.12
+Rhode Island,RI,25,0.1
+Arkansas,AR,15,0.06
+District of Columbia,DC,15,0.06
+Maine,ME,12,0.05
+South Dakota,SD,12,0.05
+Vermont,VT,7,0.03
+Montana,MT,3,0.01
+Florida,TX,2,0.01
+Alaska,AK,1,0
+West Virginia,WV,1,0

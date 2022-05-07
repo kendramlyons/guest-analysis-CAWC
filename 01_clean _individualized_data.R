@@ -12,7 +12,7 @@ library(tidyverse)
 library(lubridate)
 
 ## Read in Data
-df <- read_csv("data/travel_less_raw_limited_1.20.csv") #%>%
+df <- read_csv("data/individual_less_raw_limited_1_20_22.csv") #%>%
   #rename("group_id" = ...1)# Rename first column (index)
 
 
@@ -133,6 +133,7 @@ df <- df %>%
   mutate(state_abb = case_when(state_abb == "Texas" ~ "TX", 
                                state_abb == "Fl" ~ "FL",
                                state_abb == "Massachusetts" ~ "MA",
+                               destination == "District of Columbia" ~ "DC",
                                TRUE ~ state_abb))
 
 # create city column, extracting values from state column
@@ -142,16 +143,20 @@ df <- df %>%
          state_name = ifelse(state_name %in% state.name,
                              state_name, NA))
 
-# make dataframe with state names and abbs (matching state_abb column)
-state_info_1 <- data.frame(state_names = state.name) #,state_abb = state.abb
+# add District of Columbia to built in state info 
+state.abb[51] <- "DC"
+state.name[51] <- "District of Columbia"
 
+# make dataframe with state names and abbs (matching state_abb column)
+state_info_1 <- data.frame(state_name = state.name,
+                           state.abb = state.abb) #,state_abb = state.abb
 # left join, adding state_names column with missing values from abbs
 df <- df %>%
   left_join(state_info_1)
 
 # make new data frame with state names and abbs (matching state_name column)
-state_info_2 <- data.frame(state_name = state.name,
-                         state_abbs = state.abb) ## this might be why I don't ahve all abbs
+state_info_2 <- data.frame(state.name = state.name,
+                         state_abb = state.abb) ## this might be why I don't ahve all abbs
 
 # left join, adding state_abbs column with missing values from names
 df <- df %>%
@@ -159,8 +164,8 @@ df <- df %>%
 
 # complete state_name and State_abb columns with new values from state_names/_abbs
 df <- df %>%
-  mutate(state_name = ifelse(is.na(state_name), state_names, state_name),
-         state_abb = ifelse(is.na(state_abb), state_abbs, state_abb))
+  mutate(state_name = ifelse(is.na(state_name), state.name, state_name),
+         state_abb = ifelse(is.na(state_abb), state.abb, state_abb))
 
 # inspect results
 df %>%
@@ -168,16 +173,18 @@ df %>%
   View()
 
 df <- df %>%
-  select(- c(state_names, state_abbs))
+  select(-c(state.name, state.abbs))
 
 
 # number of arrivals by Destination
 unique(df$state_name)
 
 dst.cts <- df %>%
-  count(state_name, state_abbs)
+  count(state_name, state_abb)
 dst.cts$percent <- round((dst.cts$n/sum(dst.cts$n))*100, 2)
 dst.cts <- arrange(dst.cts, -n)
+
+dst.cts <- drop_na(dst.cts)
 
 # save data
 write_csv(dst.cts, "data/destination_counts_1.20.csv")
@@ -204,15 +211,14 @@ df <- df %>%
                                       destination_city == "Holliwood" ~ "Hollywood",
                                       destination_city == "Ft Mitchell" ~ "Fort Mitchell",
                                       destination_city == "Farmingham" ~ "Framingham",
-                                      destination_city == "District of Columbia_Washington" ~ "District of Colombia",
+                                      destination_city == "District of Columbia_Washington" ~ "District of Columbia",
                                       destination_city == "_Pequannock" ~ "Pequannock",
                                       destination_city == "_Shelbyville" ~ "Shelbyville",
                                       destination_city == "_Browns Summit" ~ "Brown's Summit",
                                       TRUE ~ destination_city))
 
 df %>%
-  count(destination_city) %>%
-  View()
+  count(destination_city)
 
 
 ## CLEAN LANGUAGES
@@ -262,6 +268,8 @@ lang.cts <- df %>%
 lang.cts$percent <- round((lang.cts$n/sum(lang.cts$n))*100, 2)
 lang.cts <- arrange(lang.cts, -n)
 
+lang.cts <- drop_na(lang.cts) %>% filter(language != "")
+
 write_csv(lang.cts, "data/language_counts_1.20.csv")
 
 
@@ -287,12 +295,14 @@ cntry.cts$percent <- round((cntry.cts$n/sum(cntry.cts$n))*100, 2)
 
 cntry.cts <- arrange(cntry.cts, -n)
 
+cntry.cts <- drop_na(cntry.cts) %>% filter(country != "")
+
 write_csv(cntry.cts, "data/country_counts_1.20.csv")
 
 
 # Save Data to Disk
 
-write_csv(df, "data/group_all_clean_1_20_22.csv")
+write_csv(df, "data/individual_all_clean_1_20_22.csv")
 
 
 

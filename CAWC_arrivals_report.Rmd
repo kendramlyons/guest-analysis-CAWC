@@ -50,7 +50,7 @@ groups <- read_csv("data/group_all_clean_1_20_22.csv") %>%
   select(arrival_date, number_in_party, stay_length)
 
 # get policy events
-policy_events <- read_csv("data/migration_policy_events_timeline_2021_selected.csv", skip = 2) %>%
+policy_events <- read_csv("data/selected_policy_events_2021.csv", skip = 2) %>%
   mutate(date = parse_date(date, format = "%m/%d/%Y"))
 
 #select key policy events
@@ -296,21 +296,69 @@ groups  %>%
 Most guests, regardless of party size, move on within a day or two or arrival. Still, many guests ended up staying longer due to a variety of reasons. Individuals usually tended to move on a bit more quickly than groups, but some had extended stays due to extenuating circumstances such as issues with health, sponsors, court dates or paperwork.
 
 
-
 ## To Learn More
 
-- **American Immigration Council**: https://www.americanimmigrationcouncil.org/research/guide-title-42-expulsions-border
 - **Arizona Public Media Video Feature**: https://www.youtube.com/watch?v=6FUyY0_exoo
-- **Boundless**: https://www.boundless.com/blog/boundless-weekly-immigration-news/
+
 - **Casa Alitas Program Website**: https://www.casaalitas.org/
+
 - **Catholic Community Services of Southern Arizona**: https://www.ccs-soaz.org/agencies-ministries/detail/alitas-aid-for-migrant-women-and-children
+
+
+### Asylum
+
+- **Southern Border Communities Coalition**: https://www.southernborder.org/border_lens_asylum_seekers_at_the_border
+
+- **U.S. Citizenship and Immigration Services**: https://www.uscis.gov/humanitarian/refugees-and-asylum/asylum/obtaining-asylum-in-the-united-states
+
+- **Syracuse University**: https://trac.syr.edu/immigration/reports/667/
+
+
+### "Remain in Mexico" (MPP)
+
+- **Department of Homeland Security**: https://www.dhs.gov/migrant-protection-protocols
+
+- **Migration Policy Institute**: https://www.migrationpolicy.org/article/court-order-relaunch-remain-in-mexico
+
+- **Reuters**: https://www.reuters.com/world/us/biden-administration-issues-new-memo-ending-trump-remain-mexico-policy-2021-10-29/
+
+
+### Temporary Protected Status
+
+- **Federal Register**: https://www.federalregister.gov/documents/2021/09/10/2021-19617/continuation-of-documentation-for-beneficiaries-of-temporary-protected-status-designations-for-el
+
+- **National Immigration Forum**: https://immigrationforum.org/article/fact-sheet-temporary-protected-status/
+
+- **U.S. Citizenship and Immigration Services**: https://www.uscis.gov/humanitarian/temporary-protected-status
+
+
+### Title 42
+
+- **American Immigration Council**: https://www.americanimmigrationcouncil.org/research/guide-title-42-expulsions-border
+
+- **CBS News**: https://www.cbsnews.com/news/immigration-title-42-senate-bill-border-expulsions/
+
+- **Deseret News**: https://www.deseret.com/2022/4/8/23015106/what-is-title-42-and-why-does-biden-plan-to-end-it-your-questions-answered-us-mexico-border
+
+- **El Paso Matters**: https://elpasomatters.org/2021/10/08/timeline-how-title-42-came-to-be-used-on-asylum-seekers/
+
+- **Puente Arizona**: https://puenteaz.org/title42/
+
+- **Washington Office on Latin America**: https://www.wola.org/analysis/a-tragic-milestone-20000th-migrant-deported-to-haiti-since-biden-inauguration/
+
+
+### News 
+
+- **Boundless**: https://www.boundless.com/blog/boundless-weekly-immigration-news/
+
 - **FEMA Funds for Migrant Aid**: https://tucson.com/news/local/pima-county-uncertain-federal-funds-to-support-asylum-seekers-will-continue/article_1d07a4c8-901d-11ec-8e6c-a37e4491dcf4.html
+
 - **Human Rights Watch**: https://www.hrw.org/news/2021/03/05/mexico-abuses-against-asylum-seekers-us-border
+
 - **International Rescue Committee**: https://www.rescue.org/article/what-happening-us-southern-border
   - En espanol: https://www.rescue.org/article/que-esta-pasando-en-la-frontera-sur-de-estados-unidos
-- **Southern Border Communities Coalition**: https://www.southernborder.org/border_lens_asylum_seekers_at_the_border
-- **Syracuse University**: https://trac.syr.edu/immigration/reports/667/
+
 - **Tucson Sentinel**: https://www.tucsonsentinel.com/local/report/030122_casa_alitas_budget/pima-county-spending-13-million-per-month-shelter-migrants-released-by-dhs/
+
 - **Tucson Weekly**: https://www.tucsonweekly.com/tucson/crowded-house-casa-alitas-faces-increased-pressure-as-more-migrants-seek-refugee-status/Content?oid=30449369
-- **U.S. Citizenship and Immigration Services**:                -https://www.uscis.gov/humanitarian/refugees-and-asylum/asylum/obtaining-asylum-in-the-united-states
--https://www.uscis.gov/humanitarian/temporary-protected-status
+
