@@ -59,7 +59,6 @@ key_policy_events <- policy_events %>%
                          'Title 42', 
                          'Temporary Protected Status')) #, 'Detention'
 
-
 ```
 
 ## Timelines
@@ -68,7 +67,7 @@ key_policy_events <- policy_events %>%
 
 ```{r arriv7day, echo=FALSE}
 # set plot theme
-theme_set(theme_minimal(15))
+theme_set(theme_minimal(14))
 
 # plot daily total arrivals (bars) and individual seven-day rolling mean (line)
 arrivals_7_day %>%
@@ -88,10 +87,11 @@ ggplot(aes(x = arrival_date,
                expand = c(.02,-.02)) + 
     labs(title = "Change in daily arrivals over time",
        x = element_blank(), 
-       y = "Number of Daily Arrivals")
+       y = "Number of Daily Arrivals",
+       caption = "Source: Casa Alitas Program, 2021")
 ```
 
-The bar plot above shows daily arrivals at Casa Alitas from their re-opening in late January of 2021 through January of 2022, when arrivals peaked on New Years Day at 326 people. The purple line represent the rolling 7-day mean of daily arrivals. 
+The bar plot above shows daily arrivals at Casa Alitas from their re-opening in late January of 2021 through January of 2022, when arrivals peaked on New Years Day at 326 people. The purple line represent the rolling 7-day mean of daily arrivals. Taking into account that around 30% of guests had stays longer one night, there were an average of 112 people staying with Alitas every night of the year. 
 
 ```{r arrivmon, echo=FALSE}
 # Monthly arrivals boxplot
@@ -114,11 +114,11 @@ arrivals_7_day %>% #weekly arrivals by month boxplots
   theme(axis.text.x = element_text(hjust = -.2)) +
   labs(title = "Change in daily arrivals by month", 
        x = element_blank(), 
-       y = "Number of Daily Arrivals")
+       y = "Number of Daily Arrivals",
+       caption = "Source: Casa Alitas Program, 2021")
 ```
 
-The plot above displays differences in the distributions of daily arrivals by 
-month. Throughout 2021, the monthly average of daily arrivals (black horizontal line) gradually approached one-hundred, finally edging past it in the first several weeks of 2022. High and low arrival day outliers (in red) are also present in August and September of 2021 and January of 2022. 
+The plot above displays differences in the distributions of daily arrivals by month. Throughout 2021, the monthly average of daily arrivals (black horizontal line) gradually approached one-hundred, finally edging past it in the first several weeks of 2022. High and low arrival day outliers (in red) are also present in August and September of 2021 and January of 2022. 
 
 ```{r arrivwk, echo=FALSE}
 # weekly arrivals barplot with linear regression
@@ -139,19 +139,17 @@ arrivals_wkly %>%
                      labels=c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec", "Jan")) +
   labs(title = "Change in weekly arrivals over time",
        x = element_blank(),
-       y = "Number of Weekly Arrivals")
+       y = "Number of Weekly Arrivals",
+       caption = "Source: Casa Alitas Program, 2021")
 
 ```
 
-The increasing trend in arrivals is even more evident in the plot above, which 
-displays total weekly arrival numbers with a linear regression line (purple) and confidence interval (shaded). So are the abrupt and unusual drops in arrivals late 
-in the year. In October and December of 2021, there were several weeks with sudden 
-and significant drops or spikes in arrivals that were _far_ outside of the predictable 
-range of usual variation. However, knowledge of potential forthcoming policy changes gleaned through networks of migrant-serving organizations and direct communication 
-with border authorities and local government officials sometimes allowed staff to prepare for large decreases or increases in arrivals. 
+The increasing trend in arrivals is even more evident in the plot above, which displays total weekly arrival numbers with a linear regression line (purple) and confidence interval (shaded). So are the abrupt and unusual drops in arrivals late 
+in the year. In October and December of 2021, there were several weeks with sudden and significant drops or spikes in arrivals that were _far_ outside of the predictable range of usual variation. However, knowledge of potential forthcoming policy changes gleaned through networks of migrant-serving organizations and direct communication with border authorities and local government officials sometimes allowed staff to prepare for large decreases or increases in arrivals. 
 
 
 ### Groups
+
 
 ```{r grouptl, echo=FALSE}
 # plot group size trends over time
@@ -163,9 +161,10 @@ groups %>%
               show.legend = FALSE) +
   geom_vline(data = key_policy_events, 
              aes(xintercept = date, 
-                 color = category),
+                 color = category,
+                 linetype = category),
              na.rm = TRUE,
-             size = 1) +
+             size = 1.25) +
   theme(axis.text.x = element_text(hjust = -.3),
         legend.position = "top", 
         legend.justification = 0) +
@@ -174,15 +173,17 @@ groups %>%
                date_labels="%b",
                expand = c(.02,-.02)) +
   scale_y_continuous(breaks=seq(1, 8)) +
-  labs(title = "Policy change events and group size over time",
+  labs(title = "Policy change effects on individuals and groups",
        x = element_blank(), 
        y = "Group Size",
-       color = element_blank()) 
+       color = element_blank(),
+       linetype = element_blank(),
+       caption = "Sources: Casa Alitas Program & Investigative Reporting Workshop, 2021") 
 
 
 ```
 
-Different policies affect individuals and groups of asylum seekers differently. 
+Throughout 2021, ups and downs in immigration policy shifts affected how individuals and groups of asylum seekers were released from detention. There were some periods of time with mostly family arrivals, such as December of 2021, and others with more individual arrivals, like month earlier in November. 
 
 
 ## Stay Length & Group Size
@@ -210,18 +211,20 @@ stay_len_perc %>%
             nudge_y = 3,
             nudge_x = .5,
             fill = "lavender") +
-  labs(x = "Stay Length in Days", 
-       y = "Percent of Arrivals") +
   scale_x_continuous(breaks = seq(0, 33, 2), 
                      limits = c(0,33)) +
   scale_y_continuous(labels = percent_format(scale = 1)) +
   theme(panel.grid.minor.y = element_blank(),
-        panel.grid.major.x = element_blank())
+        panel.grid.major.x = element_blank()) +
+  labs(title = "Those with COVID-19 quarantined until testing negative",
+       x = "Stay Length in Days", 
+       y = "Percent of Arrivals",
+       caption = "Source: Casa Alitas Program, 2021")
 ```
 
-Around 70% of guests moved on after one night or less. Most likely due to quarantine 
-and re-testing protocol when an individual or member of a group tested positive for 
-COVID-19, less than 2% of guests had stays of 6 days or 11 days respectively. 
+Around a 23% of people departed the same day they arrived and 70% of guests moved on after one night or less. After two nights or less, 85% of guests had moved on, and slightly more than 90% moved on after three nights or less. Only about 6% of all arrivals stayed longer than 5 days.
+
+Small peaks in stay lengths formed on days six and eleven, most likely when an individual or all members of a group had re-tested negative for COVID-19 so were able to continue on their journey. These two peaks together represent less than 4% of guests. A very small bump on day sixteen likely represents those groups who stayed in quarantine for 15 days, most likely re-testing three times before being able to travel on to their destinations.   
 
 ```{r staydist, echo=FALSE}
 # plot stay length counts
@@ -236,14 +239,15 @@ stay_len_perc %>% #filter out mistakes in recording year (negative values)
              fill = "lavender",
              nudge_y = 500,
              na.rm = TRUE) +
-  labs(x = "Stay Length in Days", 
-       y = "Number of Individuals") +
   scale_x_continuous(breaks = seq(0, 20, 5), 
-                     limits = c(-1, 20))
+                     limits = c(-1, 20)) +
+  labs(title = "",
+       x = "Stay Length in Days", 
+       y = "Number of Individuals",
+       caption = "Source: Casa Alitas Program, 2021")
 ```
+All-in-all, from January 26, 2021 until January 20, 2022, the Casa Alitas Program coordinated more than 40,000 beds (migrants X stay length), which averages to more than 100 people staying with Alitas per night. This was only possible through collaboration with Pima County, who contracted out several Tucson motels and hotels with funding from FEMA.  
 
-Small peaks in stay lengths on days six and eleven occurred, most likely when an individual or all members of a group had tested negative for COVID-19 and were able 
-to continue on their journey. A very small bump on day sixteen likely represents those groups who stayed in quarantine for 15 days, retesting three times before finally being able to travel to their destinations. 
 
 ```{r gpstayjit, echo=FALSE}
 # Look at distribution of group sizes for stays from 0-30 days
@@ -268,13 +272,11 @@ groups %>%
             fill = "lavender") +
   xlim(-1, 25) +   # align x-axis
   labs(y = "Group Size", 
-       x = "Stay Length in Days")
+       x = "Stay Length in Days",
+       caption = "Source: Casa Alitas Program, 2021")
 ```
 
-Individuals with extended stays likely due to COVID-19 most commonly left after 
-six days. It was more common for family groups, generally quarantining together 
-in a hotel room where it was easy to infect those who had previously tested 
-negative, prolonging quarantine. 
+Individuals with extended stays likely due to COVID-19 most commonly tested negative and departed after six days. It was more common for a family group quarantining together in a hotel or motel room (where it is easy to infect those who had previously tested negative), to have a more prolonged quarantine of 10 or 15 days. 
 
 ```{r staybp, echo=FALSE}
 # box plots of stay lengths for various group sizes
@@ -289,11 +291,13 @@ groups  %>%
                fill = "lavender") + # zoom out to see a few distant outliers
   geom_text(aes(label = labels),
             nudge_y = .5) +
-  labs(x = "Stay Length in Days",
-       y = "Group Size")
+  labs("A few guests stayed longer than a month",
+       x = "Stay Length in Days",
+       y = "Group Size",
+       caption = "Source: Casa Alitas Program, 2021")
 ```
 
-Most guests, regardless of party size, move on within a day or two or arrival. Still, many guests ended up staying longer due to a variety of reasons. Individuals usually tended to move on a bit more quickly than groups, but some had extended stays due to extenuating circumstances such as issues with health, sponsors, court dates or paperwork.
+Most guests, regardless of party size, moved on within a day or two of arrival. Close to 15% of guests ended up staying longer due to a variety of reasons. In general, individuals tended to move on more quickly than groups, but some had extended stays due to extenuating circumstances such as issues with their health, sponsors, court dates or paperwork.
 
 
 ## To Learn More
@@ -345,6 +349,21 @@ Most guests, regardless of party size, move on within a day or two or arrival. S
 - **Puente Arizona**: https://puenteaz.org/title42/
 
 - **Washington Office on Latin America**: https://www.wola.org/analysis/a-tragic-milestone-20000th-migrant-deported-to-haiti-since-biden-inauguration/
+
+
+### Migration Policy Changes
+
+- **Boundless**: https://www.boundless.com/blog/biden-immigration-tracker/
+
+- **Center for Migration Studies**: https://cmsny.org/biden-immigration-executive-actions/
+
+- **Immigration Policy Tracking Project**: https://immpolicytracking.org/home/
+
+- **Investigative Reporting Workshop**: https://investigativereportingworkshop.org/news/timeline-bidens-immigration-policy/
+
+- **Lawfare Blog**: https://www.lawfareblog.com/president-bidens-immigration-executive-actions-recap#Asylum
+
+- **Pew Research**: https://www.pewresearch.org/fact-tank/2022/01/11/key-facts-about-u-s-immigration-policies-and-bidens-proposed-changes/
 
 
 ### News 
